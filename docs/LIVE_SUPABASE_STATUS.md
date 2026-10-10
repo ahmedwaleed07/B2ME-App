@@ -50,7 +50,7 @@ This document describes the **actual** B2ME backend (not the old draft schema).
 1. `20261010172632_b2me_core_12_tables`
 2. `20261010173954_b2me_rls_and_minimum_data_api_grants`
 3. `20261010174050_b2me_auth_trial_notification_automation_indexes`
-4. `b2me_public_image_storage_with_owner_scope` (verify timestamp in remote migration list)
+4. `20261010174215_b2me_public_image_storage_with_owner_scope`
 
 **IMPORTANT:** `supabase/migrations/0001_initial_schema.sql` was an older, never-applied draft. It does **not** match the live schema and must **not** be applied to this project. Before building a new local migration chain, reconcile the live schema into version-controlled migrations. Do not run the old draft or attempt to replay the already-applied remote migration history.
 
