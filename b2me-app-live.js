@@ -9,7 +9,7 @@ if(!document.getElementById("b2meChoiceStyles")){
  style.textContent=
  ".choiceWrap .b2me-first-slogan{width:100%;max-width:295px;margin:0 auto 15px;"+
  "display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center;}"+
- ".choiceWrap .b2me-first-slogan-title{font:800 24px/1.2 inherit;color:#fff;"+
+ ".choiceWrap .b2me-first-slogan-title{font-size:24px;font-weight:800;line-height:1.2;font-family:inherit;color:#fff;"+
  "letter-spacing:.12em;direction:ltr;}"+
  ".choiceWrap .b2me-first-slogan-text{font-size:14px;line-height:1.75;font-weight:700;"+
  "color:#f5ddf4;margin:0;}"+
