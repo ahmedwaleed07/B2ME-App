@@ -55,6 +55,17 @@ function installToolbar(){
   catch(e){error(e);}
  };
 }
+function installProviderContactFields(){
+ // Keep the approved dashboard layout; extend its existing form without replacing branding.
+ const name=el("bizName")?.closest(".field");
+ if(name&&!el("bizJobTitle"))name.insertAdjacentHTML("afterend",
+  '<div class="field"><label for="bizJobTitle">العنوان الوظيفي</label>'+
+  '<input id="bizJobTitle" maxlength="160" autocomplete="organization-title"></div>');
+ const social=el("bizLinkedin")?.closest(".field");
+ if(social&&!el("bizX"))social.insertAdjacentHTML("afterend",
+  '<div class="field"><label for="bizX">X / تويتر</label>'+
+  '<input type="url" id="bizX" maxlength="500"></div>');
+}
 function showNewProviderForm(){
  const existing=el("b2meNewProviderDialog");if(existing){existing.remove();return;}
  const box=document.createElement("div");box.id="b2meNewProviderDialog";box.className="card";
@@ -109,10 +120,10 @@ async function refreshAll(preferId){
 function mapCompany(){
  if(!company)return;
  const links=company.social_links||{};
- state={...state,name:company.name_ar,cat:String(company.primary_category_id||categoryRows[0]?.id||""),
+ state={...state,name:company.name_ar,jobTitle:company.job_title||"",cat:String(company.primary_category_id||categoryRows[0]?.id||""),
   email:company.public_email||user.email||"",phone:company.public_phone||"",
   website:company.website||"",city:company.city||"",facebook:links.facebook||"",
-  instagram:links.instagram||"",linkedin:links.linkedin||"",
+  instagram:links.instagram||"",linkedin:links.linkedin||"",x:links.x||"",
   desc:company.description_ar||"",logo:safeUrl(company.logo_url),cover:safeUrl(company.cover_url)};
 }
 async function loadCompanyData(){
@@ -135,6 +146,8 @@ async function loadCompanyData(){
 }
 function draw(){
  render();
+ if(el("bizJobTitle"))el("bizJobTitle").value=state.jobTitle||"";
+ if(el("bizX"))el("bizX").value=state.x||"";
  // The old ASAS demo logo must never be presented as a new provider's logo.
  el("logoPreview").style.display=state.logo?"block":"none";
  if(!company){
@@ -182,9 +195,12 @@ saveCompany=async function(ev){
  try{
   const links={facebook:el("bizFacebook").value.trim(),
    instagram:el("bizInstagram").value.trim(),
-   linkedin:el("bizLinkedin").value.trim()};
+   linkedin:el("bizLinkedin").value.trim(),
+   x:el("bizX")?.value.trim()||""};
   await api.update("companies",{
-   name_ar:el("bizName").value.trim(),primary_category_id:Number(el("bizCat").value)||null,
+   name_ar:el("bizName").value.trim(),
+   job_title:el("bizJobTitle")?.value.trim()||null,
+   primary_category_id:Number(el("bizCat").value)||null,
    public_email:el("bizEmail").value.trim(),public_phone:el("bizPhone").value.trim(),
    website:el("bizWebsite").value.trim(),city:el("bizCity").value.trim(),
    social_links:links,description_ar:el("bizDesc").value.trim()
@@ -260,7 +276,7 @@ window.updateInquiryStatus=async function(id,status){
 async function start(){
  // Remove local demo data so unrelated ASAS test content cannot be published as real data.
  try{localStorage.removeItem("b2me_provider_dashboard");}catch(_){}
- installGate();installToolbar();
+ installGate();installToolbar();installProviderContactFields();
  try{
   const s=await api.currentSession();
   if(s?.user){user=s.user;el("b2meLiveGate").style.display="none";await refreshAll();}
