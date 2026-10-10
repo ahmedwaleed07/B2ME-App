@@ -410,7 +410,9 @@ renderChoice=(function(old){return function(){
    '<p class="choiceHint">'+esc(activeUser.email||"")+'</p>'+
    '<button class="textLink" onclick="b2meLogout()">'+msg("تسجيل الخروج","Sign Out")+'</button>'+
    '<a class="textLink" style="display:block" href="provider-dashboard.html">'+
-   msg("لوحة مزود الخدمة","Provider Dashboard")+'</a>');
+   msg("لوحة مزود الخدمة","Provider Dashboard")+'</a>'+
+   '<button class="textLink" onclick="b2meMyRequests()">'+
+   msg("طلباتي المرسلة","My inquiries")+'</button>');
  }else{
   container.insertAdjacentHTML("beforeend",'<button class="textLink" onclick="go(\'auth\')">'+
   msg("تسجيل الدخول","Sign In")+'</button>');
@@ -578,6 +580,53 @@ render=(function(old){return function(){
    msg("B2ME • متصل بقاعدة البيانات","B2ME • Connected to database"):
    msg("B2ME • تحميل البيانات","B2ME • Loading data");
 };})(render);
+window.b2meMyRequests=async function(){
+ if(!requireAuth())return;
+ const previous=document.getElementById("b2meRequestsDialog");if(previous)previous.remove();
+ const overlay=document.createElement("div");overlay.id="b2meRequestsDialog";
+ overlay.style.cssText="position:fixed;inset:0;z-index:10000;background:#070a20ed;padding:18px;display:flex;align-items:center;justify-content:center;direction:"+(language==="ar"?"rtl":"ltr");
+ overlay.innerHTML='<section style="max-width:510px;width:100%;max-height:85vh;overflow:auto;background:white;color:#20253c;padding:20px;border-radius:18px">'+
+ '<div style="display:flex;justify-content:space-between;align-items:center"><h2>'+
+ msg("طلبات التواصل المرسلة","My sent inquiries")+'</h2>'+
+ '<button type="button" id="b2meCloseRequests" style="border:0;background:none;font-size:24px;cursor:pointer">×</button></div>'+
+ '<div id="b2meRequestsList">'+msg("جاري تحميل الطلبات...","Loading inquiries...")+'</div></section>';
+ document.body.appendChild(overlay);
+ document.getElementById("b2meCloseRequests").onclick=()=>overlay.remove();
+ try{
+  const rows=await api.list("inquiries",{sender_id:"eq."+activeUser.id,
+   order:"created_at.desc",limit:100},true);
+  const names=new Map(companies.map(c=>[c.id,language==="ar"?c.ar:c.en]));
+  document.getElementById("b2meRequestsList").innerHTML=rows.length?
+   rows.map(x=>'<div style="border-top:1px solid #ddd;padding:13px 2px">'+
+    '<strong>'+esc(x.subject)+'</strong><p>'+esc(x.message)+'</p>'+
+    '<small style="color:#737b95">'+esc(names.get(x.recipient_company_id)||msg("مزود خدمة","Provider"))+
+    ' • '+esc(x.status)+' • '+
+    esc(new Date(x.created_at).toLocaleString(language==="ar"?"ar-IQ":"en-GB"))+
+    '</small></div>').join(""):
+   '<p>'+msg("ماكو طلبات تواصل مرسلة بعد.","No inquiries sent yet.")+'</p>';
+ }catch(ex){
+  const list=document.getElementById("b2meRequestsList");
+  if(list)list.textContent=ex?.message||msg("تعذّر تحميل الطلبات","Failed to load inquiries");
+ }
+};
+window.b2meMarkNotificationsRead=async function(){
+ if(!activeUser)return;
+ try{
+  await api.update("notifications",{is_read:true},{
+   user_id:"eq."+activeUser.id,is_read:"eq.false"});
+  await loadPersonal();
+  toast(msg("تم تعليم الإشعارات كمقروءة.","Notifications marked as read."));
+ }catch(ex){report(ex);}
+};
+renderNotifications=(function(old){return function(){
+ old();
+ if(activeUser&&liveNotices.some(n=>!n.is_read)){
+  const page=el("notifications")?.querySelector(".pageBody");
+  if(page)page.insertAdjacentHTML("beforeend",
+   '<button class="cta" onclick="b2meMarkNotificationsRead()">'+
+   msg("تعليم الكل كمقروء","Mark all as read")+'</button>');
+ }
+};})(renderNotifications);
 async function bootstrap(){
  if(started)return;started=true;
  // A former demo "session" must never log a user in.
