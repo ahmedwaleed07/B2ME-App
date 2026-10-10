@@ -58,9 +58,11 @@
     if(!s?.access_token||!s?.user)throw new Error("Could not start an authenticated session");
     saveSession(s,remember);return s;
   }
-  async function signUp(email,password){
+  async function signUp(email,password,remember){
     const redirect=global.location.origin+global.location.pathname;
-    return request("/auth/v1/signup?redirect_to="+encodeURIComponent(redirect),{method:"POST",body:{email,password}});
+    const result=await request("/auth/v1/signup?redirect_to="+encodeURIComponent(redirect),{method:"POST",body:{email,password}});
+    if(result?.access_token&&result?.user)saveSession(result,remember);
+    return result;
   }
   async function signOut(){
     const s=await currentSession();
