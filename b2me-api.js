@@ -1,0 +1,116 @@
+/* B2ME browser-safe Supabase REST/Auth client. No service-role keys. */
+(function(global){
+  "use strict";
+  const BASE="https://wlamwvhrcezhpbudfzhp.supabase.co";
+  const KEY="sb_publishable_BZwoD19dvThmSawDRSutIA_arliTbQU";
+  const STORAGE="b2me_auth_session_v1";
+  const sessions=[localStorage,sessionStorage];
+  let session=null, persistent=false, refreshing=null;
+  function fromStore(){
+    for(let i=0;i<sessions.length;i++){
+      try{const s=JSON.parse(sessions[i].getItem(STORAGE)||"null");
+        if(s&&s.access_token&&s.refresh_token){session=s;persistent=i===0;return s;}
+      }catch(_){}
+    }
+    session=null;return null;
+  }
+  function saveSession(s,remember){
+    session=s||null;persistent=!!remember;
+    for(const store of sessions){try{store.removeItem(STORAGE);}catch(_){}}
+    if(session){try{(persistent?localStorage:sessionStorage).setItem(STORAGE,JSON.stringify(session));}catch(_){}}
+  }
+  function fail(body,status){
+    const e=new Error(body?.msg||body?.error_description||body?.message||body?.error||"Request failed");
+    e.status=status||0;throw e;
+  }
+  async function request(path,{method="GET",body,auth=false,headers={},signal}={}){
+    const h={apikey:KEY,...headers};
+    if(body!==undefined)h["Content-Type"]="application/json";
+    if(auth){const s=await currentSession();if(!s)throw new Error("Please sign in first");
+      h.Authorization="Bearer "+s.access_token;}
+    const res=await fetch(BASE+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body),signal});
+    const content=await res.text();
+    let data;try{data=content?JSON.parse(content):null;}catch(_){data={message:content.slice(0,200)};}
+    if(!res.ok)fail(data,res.status);
+    return data;
+  }
+  async function refresh(){
+    if(refreshing)return refreshing;
+    if(!session?.refresh_token)return null;
+    refreshing=(async()=>{
+      try{
+        const s=await request("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:session.refresh_token}});
+        saveSession(s,persistent);return s;
+      }catch(e){saveSession(null,false);return null;}
+      finally{refreshing=null;}
+    })();
+    return refreshing;
+  }
+  async function currentSession(){
+    if(!session)fromStore();
+    if(!session)return null;
+    // Refresh shortly before the access token expires, including across browser tabs.
+    if(session.expires_at&&Date.now()/1000>session.expires_at-60)return refresh();
+    return session;
+  }
+  async function signIn(email,password,remember){
+    const s=await request("/auth/v1/token?grant_type=password",{method:"POST",body:{email,password}});
+    if(!s?.access_token||!s?.user)throw new Error("Could not start an authenticated session");
+    saveSession(s,remember);return s;
+  }
+  async function signUp(email,password){
+    const redirect=global.location.origin+global.location.pathname;
+    return request("/auth/v1/signup?redirect_to="+encodeURIComponent(redirect),{method:"POST",body:{email,password}});
+  }
+  async function signOut(){
+    const s=await currentSession();
+    try{if(s)await request("/auth/v1/logout",{method:"POST",headers:{Authorization:"Bearer "+s.access_token}});}
+    finally{saveSession(null,false);}
+  }
+  function params(query={}){
+    const p=new URLSearchParams();
+    for(const [k,v] of Object.entries(query)){if(v!==undefined&&v!==null)p.set(k,String(v));}
+    return p.toString();
+  }
+  async function list(table,query={},auth=false){
+    const qp=params({select:"*",...query});
+    return request("/rest/v1/"+encodeURIComponent(table)+"?"+qp,{auth});
+  }
+  async function insert(table,data){
+    const res=await request("/rest/v1/"+encodeURIComponent(table),{
+      method:"POST",body:data,auth:true,headers:{Prefer:"return=representation"}
+    });
+    return Array.isArray(res)?res[0]:res;
+  }
+  async function update(table,data,query){
+    const res=await request("/rest/v1/"+encodeURIComponent(table)+"?"+params(query),{
+      method:"PATCH",body:data,auth:true,headers:{Prefer:"return=representation"}
+    });
+    return res;
+  }
+  async function remove(table,query){
+    return request("/rest/v1/"+encodeURIComponent(table)+"?"+params(query),{
+      method:"DELETE",auth:true
+    });
+  }
+  async function uploadImage(file){
+    const s=await currentSession();if(!s)throw new Error("Sign in to upload photos");
+    const supported=["image/jpeg","image/png","image/webp"];
+    if(!supported.includes(file.type))throw new Error("Only JPEG, PNG, WebP images are allowed");
+    if(file.size>5*1024*1024)throw new Error("Image must be 5 MB or smaller");
+    const ext=file.type.split("/")[1]==="jpeg"?"jpg":file.type.split("/")[1];
+    const id=global.crypto?.randomUUID?global.crypto.randomUUID():Date.now().toString(36);
+    const filename=s.user.id+"/"+id+"."+ext;
+    const resp=await fetch(BASE+"/storage/v1/object/b2me-public-images/"+filename,{
+      method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+s.access_token,
+      "Content-Type":file.type,"x-upsert":"false"},body:file
+    });
+    if(!resp.ok){let err;try{err=await resp.json()}catch(_){err={}}fail(err,resp.status);}
+    return BASE+"/storage/v1/object/public/b2me-public-images/"+filename;
+  }
+  // Never trust the old browser-only fake session.
+  try{localStorage.removeItem("b2me_session");}catch(_){}
+  fromStore();
+  global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,list,insert,update,remove,uploadImage,
+    isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
+})(window);
