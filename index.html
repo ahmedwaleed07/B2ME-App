@@ -184,6 +184,12 @@ try{const s=JSON.parse(localStorage.getItem('b2me_session')||'null');if(s?.email
       method:"DELETE",auth:true
     });
   }
+  async function rpc(name,args){
+    if(name!=="b2me_moderate")throw new Error("Unsupported RPC method");
+    return request("/rest/v1/rpc/"+encodeURIComponent(name),{
+      method:"POST",body:args,auth:true,headers:{Prefer:"return=representation"}
+    });
+  }
   async function uploadImage(file){
     const s=await currentSession();if(!s)throw new Error("Sign in to upload photos");
     const supported=["image/jpeg","image/png","image/webp"];
@@ -202,7 +208,7 @@ try{const s=JSON.parse(localStorage.getItem('b2me_session')||'null');if(s?.email
   // Never trust the old browser-only fake session.
   try{localStorage.removeItem("b2me_session");}catch(_){}
   fromStore();
-  global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,list,insert,update,remove,uploadImage,
+  global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,list,insert,update,remove,rpc,uploadImage,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
 })(window);
 </script><script>/* Live B2ME mobile app integration. Visuals and original brand images stay untouched. */
