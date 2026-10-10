@@ -23,7 +23,8 @@ function installGate(){
  '<input required type="password" id="b2meDashboardPassword" autocomplete="current-password" style="width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccc;border-radius:9px">'+
  '<label><input type="checkbox" id="b2meDashboardRemember" checked> تذكرني</label>'+
  '<button class="btn" style="width:100%;margin-top:18px" type="submit">تسجيل الدخول</button></form>'+
- '<p style="font-size:13px;color:#667;margin-top:14px">مستخدم جديد؟ <a href="index.html" style="color:#d51ccf">أنشئ حساب B2ME بالتطبيق</a></p>'+
+ '<p style="font-size:13px;color:#667;margin-top:14px">مستخدم جديد؟ <a href="index.html" style="color:#d51ccf">أنشئ حساب B2ME بالتطبيق</a>'+
+ ' · <a href="forgot-password.html" style="color:#d51ccf">نسيت كلمة المرور؟</a></p>'+
  '</section>';
  document.body.appendChild(overlay);
  el("b2meDashboardSignIn").addEventListener("submit",async function(ev){
