@@ -3,6 +3,14 @@
 "use strict";
 const api=window.B2ME_API;
 if(!api){console.error("B2ME API client missing");return;}
+langStrings.ar.guestNote="البيانات المعروضة مباشرة من B2ME. تظهر الشركات بعد موافقة الإدارة.";
+langStrings.en.guestNote="Live B2ME data. Providers appear after administrative approval.";
+langStrings.ar.demoStatus="متصل بقاعدة بيانات B2ME";
+langStrings.en.demoStatus="Connected to B2ME database";
+langStrings.ar.authError="تأكد من الإيميل وكلمة المرور (8 أحرف على الأقل).";
+langStrings.en.authError="Enter a valid email and password (at least 8 characters).";
+langStrings.ar.notificationNote="إشعاراتك الحقيقية من B2ME";
+langStrings.en.notificationNote="Your actual B2ME notifications";
 let activeUser=null,liveNotices=[],liveOfferings=[],catalogReady=false;
 let started=false;
 const msg=(ar,en)=>language==="ar"?ar:en;
@@ -98,7 +106,7 @@ submitAuth=async function(e){
  button.disabled=true;
  try{
   if(authMode==="signup"){
-    const result=await api.signUp(email,pass);
+    const result=await api.signUp(email,pass,el("remember").checked);
     if(result?.access_token&&result?.user){
       activeUser=result.user;
       // Signup may create a session when email confirmation is disabled.
