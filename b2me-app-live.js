@@ -5,12 +5,19 @@ const api=window.B2ME_API;
 if(!api){console.error("B2ME API client missing");return;}
 // The choice screen is part of the agreed navigation, not a small secondary link.
 if(!document.getElementById("b2meChoiceStyles")){
+ if(!document.getElementById("b2meSloganFont")){
+  const font=document.createElement("link");
+  font.id="b2meSloganFont";font.rel="stylesheet";
+  font.href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@700;800&display=swap";
+  document.head.appendChild(font);
+ }
  const style=document.createElement("style");style.id="b2meChoiceStyles";
  style.textContent=
- ".choiceWrap .b2me-first-slogan-text{width:100%;max-width:305px;"+
- "font-size:14px;line-height:1.8;font-weight:700;"+
+ ".choiceWrap .b2me-first-slogan-text{width:100%;max-width:315px;"+
+ "font-family:'Baloo Bhaijaan 2',Tahoma,system-ui,sans-serif;"+
+ "font-size:18px;line-height:1.55;font-weight:800;"+
  "color:#f5ddf4;margin:12px auto 14px;text-align:center;}"+
- "@media(max-height:740px){.choiceWrap .b2me-first-slogan-text{font-size:13px;margin:9px auto 11px;}}"+
+ "@media(max-height:740px){.choiceWrap .b2me-first-slogan-text{font-size:16px;margin:9px auto 11px;}}"+
  ".choiceWrap .b2me-choice-prompt{font-size:15px;font-weight:700;color:#e7dcef;margin:0 0 5px;}"+
  ".choiceWrap .cta{font-size:15px;min-height:52px;margin-top:17px;}"+
  ".choiceWrap .b2me-choice-secondary{display:flex;align-items:center;justify-content:center;"+
