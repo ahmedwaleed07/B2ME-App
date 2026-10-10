@@ -7,15 +7,10 @@ if(!api){console.error("B2ME API client missing");return;}
 if(!document.getElementById("b2meChoiceStyles")){
  const style=document.createElement("style");style.id="b2meChoiceStyles";
  style.textContent=
- ".choiceWrap .b2me-first-slogan{width:100%;max-width:295px;margin:0 auto 15px;"+
- "display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center;}"+
- ".choiceWrap .b2me-first-slogan-title{font-size:24px;font-weight:800;line-height:1.2;font-family:inherit;color:#fff;"+
- "letter-spacing:.12em;direction:ltr;}"+
- ".choiceWrap .b2me-first-slogan-text{font-size:14px;line-height:1.75;font-weight:700;"+
- "color:#f5ddf4;margin:0;}"+
- "@media(max-height:740px){.choiceWrap .b2me-first-slogan{margin-bottom:9px;}"+
- ".choiceWrap .b2me-first-slogan-title{font-size:21px;}"+
- ".choiceWrap .b2me-first-slogan-text{font-size:13px;}}"+
+ ".choiceWrap .b2me-first-slogan-text{width:100%;max-width:305px;"+
+ "font-size:14px;line-height:1.8;font-weight:700;"+
+ "color:#f5ddf4;margin:12px auto 14px;text-align:center;}"+
+ "@media(max-height:740px){.choiceWrap .b2me-first-slogan-text{font-size:13px;margin:9px auto 11px;}}"+
  ".choiceWrap .b2me-choice-prompt{font-size:15px;font-weight:700;color:#e7dcef;margin:0 0 5px;}"+
  ".choiceWrap .cta{font-size:15px;min-height:52px;margin-top:17px;}"+
  ".choiceWrap .b2me-choice-secondary{display:flex;align-items:center;justify-content:center;"+
@@ -173,20 +168,22 @@ renderChoice=(function(old){return function(){
  old();
  const container=el("choice").querySelector(".choiceWrap");
  const originalLogo=container?.querySelector(".choiceIcon");
- if(originalLogo&&!container.querySelector(".b2me-first-slogan")){
-  originalLogo.insertAdjacentHTML("beforebegin",
-   '<div class="b2me-first-slogan"><strong class="b2me-first-slogan-title">B2ME</strong>'+
+ // Keep the approved logo file exactly as-is. Place the slogan directly underneath.
+ if(originalLogo&&!container.querySelector(".b2me-first-slogan-text")){
+  originalLogo.insertAdjacentHTML("afterend",
    '<p class="b2me-first-slogan-text">'+
    msg("كل عوامل نجاح مشروعك بمكان واحد","Everything your business needs to succeed, in one place")+
-   '</p></div>');
+   '</p>');
  }
-
+ // No duplicate B2ME wordmark or "Welcome to B2ME" above the choices.
+ const heading=container.querySelector("h2");
+ if(heading)heading.remove();
+ const slogan=container.querySelector(".b2me-first-slogan-text");
+ if(slogan&&!container.querySelector(".b2me-choice-prompt"))
+  slogan.insertAdjacentHTML("afterend",
+   '<p class="b2me-choice-prompt">'+msg("شنو تحب تسوي؟","What would you like to do?")+'</p>');
  const explore=container.querySelector(".cta");
  const offer=container.querySelector(".textLink");
- const heading=container.querySelector("h2");
- if(heading&&!container.querySelector(".b2me-choice-prompt"))
-  heading.insertAdjacentHTML("afterend",
-   '<p class="b2me-choice-prompt">'+msg("شنو تحب تسوي؟","What would you like to do?")+'</p>');
  if(explore)explore.innerHTML=msg("استكشف الشركات","Explore Companies")+" "+uiIcon("arrow");
  if(offer){
   offer.classList.add("b2me-choice-secondary");
