@@ -90,6 +90,12 @@ renderAuth=(function(old){return function(){
  if(box&&!box.querySelector("#b2meGuest"))box.insertAdjacentHTML("afterend",
   '<button id="b2meGuest" class="textLink" style="color:white;margin:12px auto;display:block" onclick="enterGuest()">'+
   msg("التصفح كزائر","Continue as Guest")+'</button>');
+ const guest=el("b2meGuest");
+ if(guest&&!el("b2meForgotLink")){
+  guest.insertAdjacentHTML("afterend",
+    '<a id="b2meForgotLink" href="forgot-password.html" class="textLink" style="color:#f4dcf3;margin:12px auto;display:block;text-align:center">'+
+    msg("نسيت كلمة المرور؟","Forgot password?")+'</a>');
+ }
 };})(renderAuth);
 window.enterGuest=function(){screen="home";liveRender();};
 submitAuth=async function(e){
@@ -313,6 +319,8 @@ async function bootstrap(){
  screen="auth";render();
  await loadCatalog();
  try{
+  const callback=await api.consumeEmailLink();
+  if(callback.type==="error")toast(msg("رابط التحقق غير صالح أو منتهي.","Verification link is invalid or expired."));
   const s=await api.currentSession();
   if(s?.user){activeUser=s.user;sessionStorage.setItem("b2me_email",s.user.email||"");await loadPersonal();screen="choice";liveRender();}
   else {screen="auth";liveRender();}
