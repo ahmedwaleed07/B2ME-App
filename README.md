@@ -1,54 +1,38 @@
-# B2ME — Iraq-first B2B marketplace (foundation 01)
+# B2ME — Business to Me
 
-## Status
-- Working interactive **UI prototype** (Arabic + English): `index.html`.
-- Separate **provider web dashboard UI prototype**: `provider-dashboard.html`.
-- No actual user accounts, live mail delivery, push notifications, payments, database connections or real suppliers yet. Demo data only.
-- No edits made to MIRA or VYRSIA.
+B2ME is an **Iraq-first B2B business-solutions discovery** project, built separately from MIRA and VYRSIA.
 
-## Run locally
-You can open `index.html` in a modern desktop browser. On iPhone, serve the whole folder as an HTTPS web site: iOS file viewers may block scripts or relative assets. For local development:
+## Current status — UI prototype only
+- `index.html`: self-contained, responsive Arabic/English app prototype, designed for convenient preview on mobile.
+- `provider-dashboard.html`: **separate web dashboard** prototype for providers (including freelancers).
+- Login, Remember Me, lead requests, favorites, promotions, and notifications are **demonstrations** until a backend is connected.
+- No real accounts, customer data, payment processing, push messages, or emails are live.
+- No Supabase project or migration has been deployed for B2ME.
 
-```bash
-cd B2ME_Starter_01
-python3 -m http.server 8080
-# Open http://localhost:8080 in your browser
-```
+## Approved experience
+- First screen: email-only Sign In / Sign Up, Remember Me, and the single slogan: **كل الحلول اليحتاجها عملك بمكان واحد** / **All the solutions your business needs in one place**.
+- Footer **only on the first screen**: Powered by + approved ASAS 360° shield and wordmark in B2ME pink-purple tones on one line.
+- B2ME logo is the approved **B2/ME lettering without a square frame**.
+- Next screen: Explore Companies as main button; secondary “Want to offer your services?” text link.
+- Customers search for services/products/companies, browse categories, favorites, recently added, recommendations, and promoted offers.
+- Company profiles include cover, logo, sector, contact information and external social links.
+- Providers manage profiles, offers, covers and contact details **in the separate web dashboard, not in the consumer application**.
 
-## Brand assets
-- `assets/b2me-approved-letters.png`: isolated original accepted B2ME logo lettering (not AI-regenerated); no square frame. Source: user's approved reference.
-- `assets/asas-shield-approved-neon.png`, `assets/asas-wordmark-approved-neon.png`: direct non-redrawn crops of the recently approved **outlined / hollow ASAS shield** and original-styled wordmark with a pink-to-purple neon gradient. Display side by side following “Powered by” only on the first authentication screen. The approved full artwork is saved unchanged as `assets/asas-approved-neon-full-reference.png`; crops preserve its pixels without regenerating the artwork.
-- `assets/asas-logo-original.png`: unchanged ASAS logo used in sample business card.
+## Local preview
+The two HTML files are self-contained and require no build step. Open them in a modern browser. For a mobile HTTPS preview, deploy to a suitable static hosting provider such as Cloudflare Pages.
 
-## Planned production separation
-- **Consumer mobile/web app**: sign in/up with email only + Remember me, discovery, categories, favorites, notification feed, lead forms.
-- **Provider dashboard (web only)**: manage company/freelancer profile, services, cover/logo, offers, contact info, request inbox, billing overview.
-- **Admin console (future)**: approve providers, verify identities, subscriptions, campaigns and broadcasts.
-- **Supabase**: independent project; migration at `supabase/migrations/0001_initial_schema.sql` is a proposed schema; **not executed**.
-- **Emails**: require SMTP/email provider and a protected server-side edge function; user data must not be sent to any browser-exposed service-role key.
+## GitHub visibility
+This repository is currently **public for development and review**. Never commit API secrets, database keys, private contact information, or customer records. `config.example.env` contains placeholders only. Hosting a commercial marketplace directly on GitHub Pages is not the intended production setup.
 
-## Launch checklist
-1. Use the dedicated **B2ME-App** GitHub repository, separate from `MIRA-App`.
-2. Confirm Supabase organization and available project slot (do not reuse MIRA's database).
-3. Apply and review migrations on the B2ME project only.
-4. Implement Supabase Auth email verification and session persistence. Add CAPTCHA/rate limits to lead form.
-5. Build protected server-side lead email sender, provider verification, admin console, approved offer publishing, and consent-managed marketing notifications.
-6. Test both languages on Safari/Android, secure RLS, then deploy.
+## Next development work
+1. Set up a **new independent B2ME Supabase project** after verifying plan costs and the correct organization.
+2. Review and apply database migration, grants, and row-level security on B2ME only (migration currently held in the prepared project ZIP, **not yet uploaded to this repository**).
+3. Implement email verification, safe session persistence and secure provider approvals.
+4. Send provider lead emails from a protected backend, with rate limiting, form validation and consent.
+5. Manage paid placements/subscriptions centrally. Publish offers only after required approvals.
+6. Browser and accessibility testing, iOS/Android checks and deployment.
 
-## Connected-services status (2026-10-10)
-- GitHub connector has access to the existing independent `B2ME-App` repository. The **B2ME-App** repository was created as public for initial code review; never commit secrets or real customer data. Do not modify MIRA.
-- Supabase connector exposes the existing `ASAS 360°` Free organization and one active project, but **does not expose creation of a new organization**. Create/confirm a separate Free organization in Supabase web UI (subject to free-project limits), then check project cost before creation. No Supabase project has been created or modified.
-- This archive is a demo scaffold; SQL is a **draft** and must not be run on MIRA. Never commit real keys.
+## Resource separation
+GitHub code is isolated in this repository; shared GitHub Actions quotas remain account-level. Supabase data must never be placed in the MIRA or VYRSIA projects.
 
-## Upload instructions (when repository is created)
-1. Open https://github.com/new and create a **Private** repository named `B2ME-App`, ideally without initializing README/license/.gitignore (they are already in this bundle).
-2. Ensure the connected GitHub integration can access the new repository. After that, return here and ask to publish the ready files.
-3. In Supabase, create/confirm a separate Free organization and check remaining project quota. Creating a new organization or Supabase project is **not part of this package**, and no production database is modified.
-
-## Testing limits
-- Static JavaScript syntax and local asset presence checked.
-- Browser automation in the available container could not navigate to `file://` or `localhost` because those URLs were blocked by administrator policy. This is *not* a deployment or Safari test.
-## Public repository safety
-- This is a prototype only; no live authentication or email delivery yet.
-- A public repository exposes all source files. Never commit credentials or customer information.
-- GitHub Pages is not intended as free hosting for a commercial marketplace. Choose a suitable host such as Cloudflare Pages for public testing and a production deployment later.
+No CI workflow has been activated here, and no changes were made to MIRA/VYRSIA.
