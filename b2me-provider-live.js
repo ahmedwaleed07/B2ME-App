@@ -49,7 +49,7 @@ function installToolbar(){
  el("b2meProviderSelector").addEventListener("change",async e=>{
   company=companies.find(c=>c.id===e.target.value)||null;await loadCompanyData();
  });
- el("b2meAddProvider").onclick=showNewProviderForm;
+ el("b2meAddProvider").style.display="none"; // Provider applications now start in the consumer app.
  el("b2meSignOut").onclick=async()=>{
   try{await api.signOut();user=null;company=null;el("b2meLiveGate").style.display="flex";}
   catch(e){error(e);}
@@ -272,6 +272,50 @@ window.updateInquiryStatus=async function(id,status){
  try{await api.update("inquiries",{status},{id:"eq."+id});
   await loadCompanyData();tip();}
  catch(ex){error(ex);}
+};
+
+// Dedicated provider dashboard only becomes available once B2ME administration
+// has approved the preliminary registration and the email is confirmed.
+const originalRefreshAll=refreshAll;
+refreshAll=async function(preferId){
+ await originalRefreshAll(preferId);
+ const approved=companies.filter(c=>c.status==="approved");
+ const overlay=el("b2meLiveGate");
+ const form=el("b2meDashboardSignIn");
+ const desc=el("b2meGateDescription");
+ const newButton=el("b2meAddProvider");
+ if(newButton)newButton.style.display="none";
+ const draft=el("b2meNewProviderDialog");if(draft)draft.remove();
+ if(!approved.length){
+  if(overlay)overlay.style.display="flex";
+  if(form)form.style.display="none";
+  if(desc)desc.textContent=companies.length?
+   "تم استلام استمارة التسجيل الأولي. منصة مزود الخدمة تتفعل بعد تأكيد الإيميل وموافقة إدارة B2ME على التسجيل.":
+   "ما عدك تسجيل مزود خدمة معتمد بعد. ارجع لتطبيق B2ME واختر «تريد تعرض خدماتك؟» حتى تكمل الاستمارة الأولية.";
+  if(!el("b2mePendingLinks")&&form){
+    const links=document.createElement("div");links.id="b2mePendingLinks";
+    links.innerHTML='<p style="margin-top:16px"><a href="index.html" style="color:#864bd7">الرجوع إلى B2ME</a></p>'+
+      '<button type="button" id="b2mePendingLogout" class="btn gray" style="margin-top:6px">تسجيل خروج</button>';
+    form.insertAdjacentElement("afterend",links);
+    el("b2mePendingLogout").onclick=async()=>{
+      try{await api.signOut();user=null;company=null;
+        el("b2meGateDescription").textContent="سجّل دخولك بحساب B2ME.";
+        form.style.display="block";links.remove();}catch(err){error(err);}
+    };
+  }
+ }else{
+  companies=approved;
+  company=approved.find(c=>c.id===company?.id)||approved[0];
+  const selector=el("b2meProviderSelector");
+  if(selector){
+   selector.innerHTML=approved.map(c=>'<option value="'+h(c.id)+'">'+h(c.name_ar)+'</option>').join("");
+   selector.value=company.id;
+  }
+  if(form)form.style.display="block";
+  if(overlay)overlay.style.display="none";
+  const links=el("b2mePendingLinks");if(links)links.remove();
+  await loadCompanyData();
+ }
 };
 async function start(){
  // Remove local demo data so unrelated ASAS test content cannot be published as real data.
