@@ -5,10 +5,10 @@ An Iraq-first B2B discovery platform for businesses and freelance service provid
 ## Current status
 - `index.html`: self-contained Arabic/English **UI prototype**, with the approved B2ME wordmark and updated ASAS 360° neon shield + wordmark on the first-screen footer.
 - `provider-dashboard.html`: **separate web dashboard prototype** for supplier profiles, services and offers. Providers do not edit offers in the consumer app.
-- `supabase/migrations/0001_initial_schema.sql`: B2ME-only PostgreSQL/Supabase draft, **uploaded but NOT executed**.
+- `docs/LIVE_SUPABASE_STATUS.md`: live Supabase project details, schema/security status and integration tasks.\n- `supabase/migrations/0001_initial_schema.sql`: **obsolete draft, do not execute**; live schema was provisioned separately and differs.
 - `tests/test_schema_contract.py`: basic static security-policy checks.
 - `docs/IMPLEMENTATION.md`: implementation and go-live checklist.
-- No live Supabase connection, real authentication, contact-request emails, mobile push, or paid billing yet. Demo records and local-only interactions are not production features.
+- Live B2ME-only Supabase project **exists** with 12 RLS-protected tables, signup/trial/inquiry-notification triggers, indexes, and scoped image storage. However the web UI is **not connected** to this database yet; auth, email delivery, mobile push, and paid billing are not active. Demo data remain local only.
 
 ## Product decisions
 - **Iraq first**, extendable to new countries later.
@@ -23,7 +23,7 @@ An Iraq-first B2B discovery platform for businesses and freelance service provid
 ## Security and operations
 - Public GitHub repo means code is publicly readable. **Never commit secret keys, customer data, real emails or passwords**.
 - Provider status and paid placements are admin-only; changes to live listings/offers require review.
-- JWT-bound inquiry emails, user-scoped private inquiries, favorites and notifications use database RLS. These policies must still be exercised against a real B2ME test database.
+- User-scoped private inquiries, favorites and notifications now have live RLS policies. Structural and permission checks have passed, but multi-account end-to-end signup and inquiry-email delivery tests are still pending.
 - Supabase project must be created **independently**; never run the migration against MIRA, VYRSIA or the existing unidentified project.
 - GitHub Pages is not the intended production hosting for a commercial marketplace; use suitable hosting once the app is ready.
 
@@ -34,6 +34,6 @@ python tests/test_schema_contract.py
 Browser rendering, live PostgreSQL RLS and email delivery tests remain **pending**.
 
 ## Next deployment step
-Create a separate Supabase **organization** for B2ME or explicitly select an existing organization, check the project cost, then create a dedicated project and apply the migration **after user confirmation**.
+Connect the existing app and provider dashboard to the live B2ME Supabase backend using a browser-safe **publishable** key; then configure Auth email verification and redirect URLs, perform multi-user RLS tests, build protected admin approvals, and implement rate-limited transactional emails. **Do not run the old `0001_initial_schema.sql` draft against the live project.**\n\nSee [Live Supabase backend status](docs/LIVE_SUPABASE_STATUS.md).
 
 No changes were made to MIRA or VYRSIA.
