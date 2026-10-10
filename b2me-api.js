@@ -76,6 +76,13 @@
     if(result?.access_token&&result?.user)saveSession(result,remember);
     return result;
   }
+  async function requestProviderRegistration(email,application){
+    const origin=global.location.origin;
+    const redirect=origin+global.location.pathname;
+    return request("/auth/v1/otp?redirect_to="+encodeURIComponent(redirect),{
+      method:"POST",body:{email,create_user:true,data:{b2me_provider_application:application}}
+    });
+  }
   async function sendPasswordReset(email){
     const redirect=global.location.origin+global.location.pathname;
     return request("/auth/v1/recover?redirect_to="+encodeURIComponent(redirect),{
@@ -173,7 +180,7 @@
     });
   }
   global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,
-    sendPasswordReset,consumeEmailLink,updatePassword,
+    sendPasswordReset,consumeEmailLink,updatePassword,requestProviderRegistration,
     list,insert,update,remove,rpc,uploadImage,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
 })(window);
