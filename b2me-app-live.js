@@ -18,7 +18,11 @@ if(!document.getElementById("b2meChoiceStyles")){
  "font-size:22px!important;line-height:1.5;font-weight:800!important;"+
  "color:#f5ddf4;margin:12px auto 16px;text-align:center;}"+
  "@media(max-height:740px){.choiceWrap .b2me-first-slogan-text{font-size:20px!important;margin:9px auto 13px;}}"+
- ".choiceWrap .b2me-choice-prompt{font-size:15px;font-weight:700;color:#e7dcef;margin:0 0 5px;}"+
+ ".choiceWrap{position:relative;padding-bottom:82px;}"+
+ ".choiceWrap .b2me-asas-footer{position:absolute;left:12px;right:12px;bottom:24px;"+
+ "width:auto;margin:0;min-height:28px;display:flex;align-items:center;"+
+ "justify-content:center;direction:ltr;gap:6px;color:#e7d7f3;}"+
+ "@media(max-height:740px){.choiceWrap .b2me-asas-footer{bottom:14px;}}"+
  ".choiceWrap .cta{font-size:15px;min-height:52px;margin-top:17px;}"+
  ".choiceWrap .b2me-choice-secondary{display:flex;align-items:center;justify-content:center;"+
  "width:100%;min-height:52px;margin-top:13px;padding:13px 16px;"+
@@ -185,10 +189,16 @@ renderChoice=(function(old){return function(){
  // No duplicate B2ME wordmark or "Welcome to B2ME" above the choices.
  const heading=container.querySelector("h2");
  if(heading)heading.remove();
- const slogan=container.querySelector(".b2me-first-slogan-text");
- if(slogan&&!container.querySelector(".b2me-choice-prompt"))
-  slogan.insertAdjacentHTML("afterend",
-   '<p class="b2me-choice-prompt">'+msg("شنو تحب تسوي؟","What would you like to do?")+'</p>');
+ // Clean up the two explanatory sentences from the welcome screen.
+ const explanation=container.querySelector(".choiceHint");
+ if(explanation)explanation.remove();
+ // Reuse the actual original ASAS shield and wordmark from the sign-in screen.
+ const asasOriginal=el("auth")?.querySelector(".authFooter");
+ if(asasOriginal&&!container.querySelector(".b2me-asas-footer")){
+  const footer=asasOriginal.cloneNode(true);
+  footer.classList.add("b2me-asas-footer");
+  container.appendChild(footer);
+ }
  const explore=container.querySelector(".cta");
  const offer=container.querySelector(".textLink");
  if(explore)explore.innerHTML=msg("استكشف الشركات","Explore Companies")+" "+uiIcon("arrow");
@@ -196,9 +206,7 @@ renderChoice=(function(old){return function(){
   offer.classList.add("b2me-choice-secondary");
   offer.textContent=msg("تريد تعرض خدماتك؟","Want to Offer Your Services?");
  }
- const hint=container.querySelector(".choiceHint");
- if(hint)hint.textContent=msg("للشركات والمستقلين وأصحاب المهن",
- "For companies, freelancers and professionals");
+
  if(activeUser){
   container.insertAdjacentHTML("beforeend",
    '<p class="choiceHint">'+esc(activeUser.email||"")+'</p>'+
