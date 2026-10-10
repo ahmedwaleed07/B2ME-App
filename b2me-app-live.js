@@ -13,11 +13,11 @@ if(!document.getElementById("b2meChoiceStyles")){
  }
  const style=document.createElement("style");style.id="b2meChoiceStyles";
  style.textContent=
- ".choiceWrap .b2me-first-slogan-text{width:100%;max-width:315px;"+
- "font-family:'Baloo Bhaijaan 2',Tahoma,system-ui,sans-serif;"+
- "font-size:18px;line-height:1.55;font-weight:800;"+
- "color:#f5ddf4;margin:12px auto 14px;text-align:center;}"+
- "@media(max-height:740px){.choiceWrap .b2me-first-slogan-text{font-size:16px;margin:9px auto 11px;}}"+
+ ".choiceWrap .b2me-first-slogan-text{width:100%;max-width:340px;"+
+ "font-family:'Baloo Bhaijaan 2',Tahoma,system-ui,sans-serif!important;"+
+ "font-size:22px!important;line-height:1.5;font-weight:800!important;"+
+ "color:#f5ddf4;margin:12px auto 16px;text-align:center;}"+
+ "@media(max-height:740px){.choiceWrap .b2me-first-slogan-text{font-size:20px!important;margin:9px auto 13px;}}"+
  ".choiceWrap .b2me-choice-prompt{font-size:15px;font-weight:700;color:#e7dcef;margin:0 0 5px;}"+
  ".choiceWrap .cta{font-size:15px;min-height:52px;margin-top:17px;}"+
  ".choiceWrap .b2me-choice-secondary{display:flex;align-items:center;justify-content:center;"+
