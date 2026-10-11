@@ -19,9 +19,11 @@ if(!document.getElementById("b2meChoiceStyles")){
  "color:#f5ddf4;margin:12px auto 16px;text-align:center;}"+
  "@media(max-height:740px){.choiceWrap .b2me-first-slogan-text{font-size:20px!important;margin:9px auto 13px;}}"+
  ".choiceWrap{position:relative;padding-bottom:82px;}"+
- ".choiceWrap .b2me-asas-footer{position:absolute;left:12px;right:12px;bottom:24px;"+
- "width:auto;margin:0;min-height:28px;display:flex;align-items:center;"+
- "justify-content:center;direction:ltr;gap:6px;color:#e7d7f3;}"+
+ ".choiceWrap .b2me-asas-footer{position:absolute;left:12px;right:12px;bottom:22px;"+
+ "z-index:5;width:auto;margin:0;min-height:32px;display:flex;align-items:center;"+
+ "justify-content:center;direction:ltr;gap:6px;color:#e7d7f3;white-space:nowrap;}"+
+ ".choiceWrap .b2me-asas-footer .asasShield{height:23px;width:auto;object-fit:contain;}"+
+ ".choiceWrap .b2me-asas-footer .asasWordmark{height:19px;width:auto;object-fit:contain;}"+
  "@media(max-height:740px){.choiceWrap .b2me-asas-footer{bottom:14px;}}"+
  ".choiceWrap .cta{font-size:15px;min-height:52px;margin-top:17px;}"+
  ".choiceWrap .b2me-choice-secondary{display:flex;align-items:center;justify-content:center;"+
@@ -193,10 +195,12 @@ renderChoice=(function(old){return function(){
  const explanation=container.querySelector(".choiceHint");
  if(explanation)explanation.remove();
  // Reuse the actual original ASAS shield and wordmark from the sign-in screen.
- const asasOriginal=el("auth")?.querySelector(".authFooter");
+ const asasOriginal=(typeof B2ME_ASAS_FOOTER!=="undefined"&&B2ME_ASAS_FOOTER)
+  ||el("auth")?.querySelector(".authFooter");
  if(asasOriginal&&!container.querySelector(".b2me-asas-footer")){
   const footer=asasOriginal.cloneNode(true);
   footer.classList.add("b2me-asas-footer");
+  footer.setAttribute("aria-label","Powered by ASAS 360°");
   container.appendChild(footer);
  }
  const explore=container.querySelector(".cta");
