@@ -65,7 +65,7 @@ const report=e=>{console.error("B2ME",e);toast(msg("حدث خطأ: ","Error: ")+
 const asText=x=>String(x??"");
 const sanitizedUrl=x=>/^https?:\/\//i.test(asText(x))?asText(x):"";
 const fromRow=(r,listings=[])=>({
- id:r.id,ar:r.name_ar,en:r.name_en||r.name_ar,
+ id:r.id,ar:r.name_ar,en:r.name_en||r.name_ar,providerType:r.provider_type||"company",
  sector:categoriesData.find(c=>c.dbId===r.primary_category_id)?.id||"tech",
  cityAr:r.city||r.governorate||"العراق",cityEn:r.city||r.governorate||"Iraq",
  bioAr:r.description_ar||"",bioEn:r.description_en||r.description_ar||"",
