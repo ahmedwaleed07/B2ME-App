@@ -312,6 +312,7 @@ refreshAll=async function(preferId){
    selector.value=company.id;
   }
   if(form)form.style.display="block";
+  const links=el("b2mePendingLinks");if(links)links.remove();
   if(overlay)overlay.style.display="none";
   let note=el("b2meCompanyReviewNote");
   if(company.status==="pending"){
@@ -320,17 +321,16 @@ refreshAll=async function(preferId){
     document.querySelector(".main")?.prepend(note);}
    note.textContent="أكمل معلومات نشاطك هنا. سيبقى غير منشور للناس إلى أن تراجعه إدارة B2ME.";
   }else if(note)note.remove();
-  const links=el("b2mePendingLinks");if(links)links.remove();
   await loadCompanyData();
  }
 };
 async function start(){
  // Remove local demo data so unrelated ASAS test content cannot be published as real data.
  try{localStorage.removeItem("b2me_provider_dashboard");}catch(_){}
+ try{
  installGate();installToolbar();installProviderContactFields();
   const link=await api.consumeEmailLink();
   if(link?.type==="error")throw new Error(link.error);
- try{
   const s=await api.currentSession();
   if(s?.user){user=s.user;el("b2meLiveGate").style.display="none";await refreshAll();}
  }catch(ex){error(ex);}

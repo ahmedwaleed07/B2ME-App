@@ -156,13 +156,13 @@
     // The anonymous role can insert only the form fields; it cannot read or review rows.
     return request("/rest/v1/provider_applications",{
       method:"POST",body:application,headers:{Prefer:"return=minimal"}
+  }
     });
   async function invokeFunction(name,payload){
     if(!/^[a-z0-9-]+$/i.test(name))throw new Error("Invalid function name");
     return request("/functions/v1/"+encodeURIComponent(name),{
       method:"POST",body:payload,auth:true
     });
-  }
   }
   async function sendPasswordReset(email){
     const redirect=global.location.origin+global.location.pathname;
@@ -300,9 +300,11 @@ async function authAttempt(e){
  }catch(ex){displaySignIn(ex?.message||"خطأ في تسجيل الدخول");}
  finally{btn.disabled=false;}
 }
-async function load(){
+async function load(quiet=false){
  if(!state.user||state.loading)return;
- state.loading=true;$("refreshButton").disabled=true;text("جاري تحميل الطلبات...");
+ state.loading=true;
+ if(!quiet){$("refreshButton").disabled=true;text("جاري تحميل الطلبات...");}
+  const previousPending=new Set(state.applications.filter(x=>x.status==="pending").map(x=>x.id));
  try{
   const [applications,companies,listings,offers]=await Promise.all([
    api.list("provider_applications",{order:"created_at.desc",limit:500},true),
@@ -310,14 +312,16 @@ async function load(){
    api.list("listings",{order:"created_at.desc",limit:500},true),
    api.list("provider_offers",{order:"created_at.desc",limit:500},true)
   ]);
+  const arrived=applications.filter(x=>x.status==="pending"&&!previousPending.has(x.id));
   state.applications=applications;state.companies=companies;state.listings=listings;state.offers=offers;
   $("applicationsCount").textContent=applications.filter(x=>x.status==="pending").length;
   $("companiesCount").textContent=companies.filter(x=>x.status==="pending").length;
   $("listingsCount").textContent=listings.filter(x=>x.status==="pending").length;
   $("offersCount").textContent=offers.filter(x=>x.status==="pending").length;
-  text("البيانات محدّثة. القرارات تُحفظ مباشرة في قاعدة B2ME.");
+  if(arrived.length)text("وصل "+arrived.length+" طلب تسجيل جديد إلى صندوق B2ME.");
+  else if(!quiet)text("البيانات محدّثة. القرارات تُحفظ مباشرة في قاعدة B2ME.");
   render();
- }catch(ex){err(ex);}finally{state.loading=false;$("refreshButton").disabled=false;}
+ }catch(ex){if(!quiet)err(ex);}finally{state.loading=false;if(!quiet)$("refreshButton").disabled=false;}
 }
 function card(t,record){
  const c=cfg[t],status=String(record.status||"");
@@ -417,6 +421,12 @@ $("refreshButton").onclick=load;
   else if(s){displaySignIn("هذا الحساب مو مخصص للإدارة؛ سجّل بحساب مدير مخوّل.");}
   else displaySignIn();
  }catch(e){displaySignIn("تعذر استعادة الجلسة، سجل الدخول من جديد.");}
+window.setInterval(()=>{
+ if(state.user&&!document.hidden)load(true);
+},45000);
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden&&state.user)load(true);
+});
 })();
 })();</script>
 </body></html>
