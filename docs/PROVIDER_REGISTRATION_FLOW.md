@@ -11,14 +11,16 @@
 
 > هذه الاستمارة تعد استمارة تسجيل اولية و بعد تأكيد التسجيل سيتم تزويدكم بمنصة خاصة بحسابكم لرفع معلومات و صور و نماذج اعمالكم مع وسائل التواصل معكم.
 
-6. New accounts proceed through password creation and an email confirmation message. Account signup uses the verified Supabase Auth API and attaches preliminary registration data to user metadata. A protected trigger extracts these data and creates a `pending` company application associated with the new user. Company approval is blocked until the account email is verified.
-7. Existing signed-in accounts can submit the same preliminary registration directly, which creates a pending company profile. They cannot self-approve it.
-8. Provider dashboard is locked until there is at least one **approved** company for that account. Before approval, the dashboard displays the pending-status explanation and a link back to the app.
+6. The app inserts the form fields into `public.provider_applications`. It does not sign the visitor up, ask them to choose a password, or create a company.
+7. The B2ME admin dashboard shows new requests in its **طلبات مقدمي الخدمات الأولية** inbox. Only an account with the server-issued `app_metadata.b2me_admin` role can read or review the rows. Visitors can submit form fields but cannot read, edit or approve any application.
+8. The admin can mark a request suitable or reject it. Creating the Auth account and sending the applicant an invitation must happen after this review. Email alerts to the B2ME admin are not configured yet; the request is available in the admin inbox after refresh.
+9. The provider dashboard remains locked until a provider account and approved company record are created.
 
 ## Notes
-- The user does **not** get an active provider dashboard solely from submitting the form or verifying email: B2ME admin approval is required.
-- Admin approval uses the existing protected moderation RPC and audit trail.
+- A preliminary application does **not** create an Auth user or company record.
+- Company/listing moderation continues to use the existing protected moderation RPC and audit trail.
+- The first stage of the preliminary-application flow is live in the B2ME database and app source. Admin email notification and post-approval account invitation still need to be configured and tested.
 - The old draft migrations in `supabase/migrations/0001_initial_schema.sql` must not be run against the live DB.
 - The original approved B2ME logo and app identity have been preserved. No new brand asset has been generated.
-- Verified on source code: syntax checks, required fields, exact form note, absence of guest button, verified-email approval guard, pending-only dashboard gate.
+- Verified on source code: syntax checks, required fields, exact form note, no account-creation step in the initial form, and an admin-only application inbox.
 - Real account email delivery, SMTP, Auth URL redirects and full end-to-end account testing remain necessary before launch.

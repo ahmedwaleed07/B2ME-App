@@ -19,7 +19,7 @@
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .heading{font-size:24px;margin:8px 0 4px}.muted{font-size:13px;color:var(--muted)}
 .pill{font-size:11px;border:1px solid #ffffff55;border-radius:99px;padding:7px 11px}
-.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:25px 0}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin:25px 0}
 .metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:19px}
 .metric span{font-size:13px;color:var(--muted)}.metric strong{font-size:32px;display:block;margin-top:7px;color:#222441}
 .filter-row{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0}
@@ -56,6 +56,7 @@
 <div class="toolbar"><div><h1 class="heading">مراجعة طلبات B2ME</h1><p class="muted">حساب الإدارة: <span id="signedInUser"></span></p></div>
 <div><button class="small-btn" id="refreshButton">تحديث البيانات</button> <button class="small-btn" onclick="adminLogout()">تسجيل خروج</button></div></div>
 <div class="summary">
+<div class="metric"><span>طلبات مقدمي الخدمات الأولية</span><strong id="applicationsCount">—</strong></div>
 <div class="metric"><span>شركات بانتظار الموافقة</span><strong id="companiesCount">—</strong></div>
 <div class="metric"><span>خدمات بانتظار الموافقة</span><strong id="listingsCount">—</strong></div>
 <div class="metric"><span>عروض بانتظار الموافقة</span><strong id="offersCount">—</strong></div></div>
@@ -65,10 +66,11 @@
 <button data-filter="rejected" onclick="adminFilter('rejected')">مرفوض</button>
 <button data-filter="published" onclick="adminFilter('published')">منشور</button>
 </div>
+<section class="pane" id="applicationsSection"><div class="pane-title"><h2>طلبات مقدمي الخدمات الأولية</h2><span class="section-count">0</span></div><div class="cards" id="applicationsList"></div></section>
 <section class="pane" id="companiesSection"><div class="pane-title"><h2>الشركات ومزودو الخدمات</h2><span class="section-count">0</span></div><div class="cards" id="companiesList"></div></section>
 <section class="pane" id="listingsSection"><div class="pane-title"><h2>المنتجات والخدمات</h2><span class="section-count">0</span></div><div class="cards" id="listingsList"></div></section>
 <section class="pane" id="provider_offersSection"><div class="pane-title"><h2>العروض الترويجية</h2><span class="section-count">0</span></div><div class="cards" id="provider_offersList"></div></section>
-<p class="note">هذه لوحة للإدارة فقط. يتم تسجيل قرار الموافقة أو الرفض في قاعدة البيانات. لا توجد مدفوعات مفعلة.</p>
+<p class="note">طلبات التسجيل الأولية تظهر هنا قبل إنشاء حساب مقدم الخدمة. قرارات المراجعة تُحفظ في قاعدة B2ME. لا توجد مدفوعات مفعلة.</p>
 </section>
 <p id="message" role="status"></p>
 </main><script>/* B2ME browser-safe Supabase REST/Auth client. No service-role keys. */
@@ -149,11 +151,11 @@
     if(result?.access_token&&result?.user)saveSession(result,remember);
     return result;
   }
-  async function requestProviderRegistration(email,application){
-    const origin=global.location.origin;
-    const redirect=origin+global.location.pathname;
-    return request("/auth/v1/otp?redirect_to="+encodeURIComponent(redirect),{
-      method:"POST",body:{email,create_user:true,data:{b2me_provider_application:application}}
+  async function submitProviderApplication(application){
+    // Preliminary provider applications must never create an Auth account.
+    // The anonymous role can insert only the form fields; it cannot read or review rows.
+    return request("/rest/v1/provider_applications",{
+      method:"POST",body:application,headers:{Prefer:"return=minimal"}
     });
   }
   async function sendPasswordReset(email){
@@ -253,7 +255,7 @@
     });
   }
   global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,
-    sendPasswordReset,consumeEmailLink,updatePassword,requestProviderRegistration,
+    sendPasswordReset,consumeEmailLink,updatePassword,submitProviderApplication,
     list,insert,update,remove,rpc,uploadImage,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
 })(window);
@@ -262,7 +264,7 @@
 const api=window.B2ME_API;
 const $=id=>document.getElementById(id);
 const escapeText=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const state={user:null,companies:[],listings:[],offers:[],filter:"pending",loading:false};
+const state={user:null,applications:[],companies:[],listings:[],offers:[],filter:"pending",loading:false};
 const cfg={
  companies:{title:"الشركات ومزودو الخدمات",approve:"approved",reject:"rejected",suspend:"suspended",label:r=>r.name_ar||r.name_en||"شركة"},
  listings:{title:"المنتجات والخدمات",approve:"published",reject:"rejected",suspend:"archived",label:r=>r.title_ar||r.title_en||"خدمة"},
@@ -297,12 +299,14 @@ async function load(){
  if(!state.user||state.loading)return;
  state.loading=true;$("refreshButton").disabled=true;text("جاري تحميل الطلبات...");
  try{
-  const [companies,listings,offers]=await Promise.all([
+  const [applications,companies,listings,offers]=await Promise.all([
+   api.list("provider_applications",{order:"created_at.desc",limit:500},true),
    api.list("companies",{order:"created_at.desc",limit:500},true),
    api.list("listings",{order:"created_at.desc",limit:500},true),
    api.list("provider_offers",{order:"created_at.desc",limit:500},true)
   ]);
-  state.companies=companies;state.listings=listings;state.offers=offers;
+  state.applications=applications;state.companies=companies;state.listings=listings;state.offers=offers;
+  $("applicationsCount").textContent=applications.filter(x=>x.status==="pending").length;
   $("companiesCount").textContent=companies.filter(x=>x.status==="pending").length;
   $("listingsCount").textContent=listings.filter(x=>x.status==="pending").length;
   $("offersCount").textContent=offers.filter(x=>x.status==="pending").length;
@@ -332,6 +336,10 @@ function card(t,record){
    '</div></article>';
 }
 function render(){
+ const applications=state.applications.filter(x=>state.filter==="all"||x.status===state.filter);
+ $("applicationsList").innerHTML=applications.length?applications.map(applicationCard).join(""):
+  '<div class="empty">ماكو طلبات تسجيل أولية بهالحالة.</div>';
+ $("applicationsSection").querySelector(".section-count").textContent=String(applications.length);
  const types=[["companies",state.companies],["listings",state.listings],["provider_offers",state.offers]];
  for(const [t,data] of types){
   const filtered=data.filter(x=>state.filter==="all"||x.status===state.filter);
@@ -340,6 +348,35 @@ function render(){
   $(t+"Section").querySelector(".section-count").textContent=String(filtered.length);
  }
 }
+function applicationCard(a){
+ const status={pending:"بانتظار المراجعة",approved:"مناسب لإنشاء الحساب",rejected:"مرفوض"}[a.status]||a.status;
+ const links=Object.entries(a.social_links||{}).map(([name,url])=>
+  '<a href="'+escapeText(url)+'" target="_blank" rel="noopener noreferrer">'+escapeText(name)+'</a>').join(" · ");
+ const email=escapeText(a.email),id=escapeText(a.id);
+ return '<article class="review-card"><div class="review-head"><div><h3>'+escapeText(a.full_name)+
+  '</h3><div class="minor">'+escapeText(a.company_name||"مقدم خدمة مستقل")+
+  (a.job_title?' · '+escapeText(a.job_title):'')+'</div></div><span class="state '+escapeText(a.status)+'">'+
+  escapeText(status)+'</span></div><p class="description">'+
+  '<strong>الهاتف:</strong> '+escapeText(a.phone)+'<br><strong>البريد:</strong> <a href="mailto:'+email+'">'+email+'</a>'+
+  (a.website?'<br><strong>الموقع:</strong> <a href="'+escapeText(a.website)+'" target="_blank" rel="noopener noreferrer">'+escapeText(a.website)+'</a>':'')+
+  (links?'<br><strong>التواصل:</strong> '+links:'')+'</p><p class="minor">تاريخ الطلب: '+
+  escapeText(new Date(a.created_at).toLocaleString("ar-IQ"))+'</p><div class="actions">'+
+  (a.status==="pending"?'<button class="approve" onclick="reviewProviderApplication(\''+id+'\',\'approved\')">مناسب، متابعة إنشاء الحساب</button>'+
+   '<button class="reject" onclick="reviewProviderApplication(\''+id+'\',\'rejected\')">رفض</button>':'')+
+  '</div></article>';
+}
+window.reviewProviderApplication=async function(id,status){
+ if(!["approved","rejected"].includes(status))return;
+ const a=state.applications.find(x=>x.id===id);if(!a)return;
+ const label=status==="approved"?"تحديد الطلب كمناسب للانتقال إلى إنشاء الحساب":"رفض الطلب";
+ if(!confirm(label+" لـ "+a.full_name+"؟"))return;
+ text("جارٍ حفظ المراجعة...");
+ try{
+  await api.update("provider_applications",{status,reviewed_at:new Date().toISOString(),reviewed_by:state.user.id},{id:"eq."+id});
+  await load();
+ }catch(ex){err(ex);}
+};
+
 window.moderateRecord=async function(t,id,newStatus){
  if(!cfg[t]||!["approved","published","rejected","archived","suspended"].includes(newStatus))return;
  const record=(t==="companies"?state.companies:t==="listings"?state.listings:state.offers).find(x=>x.id===id);

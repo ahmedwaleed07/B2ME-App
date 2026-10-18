@@ -165,11 +165,11 @@ try{const s=JSON.parse(localStorage.getItem('b2me_session')||'null');if(s?.email
     if(result?.access_token&&result?.user)saveSession(result,remember);
     return result;
   }
-  async function requestProviderRegistration(email,application){
-    const origin=global.location.origin;
-    const redirect=origin+global.location.pathname;
-    return request("/auth/v1/otp?redirect_to="+encodeURIComponent(redirect),{
-      method:"POST",body:{email,create_user:true,data:{b2me_provider_application:application}}
+  async function submitProviderApplication(application){
+    // Preliminary provider applications must never create an Auth account.
+    // The anonymous role can insert only the form fields; it cannot read or review rows.
+    return request("/rest/v1/provider_applications",{
+      method:"POST",body:application,headers:{Prefer:"return=minimal"}
     });
   }
   async function sendPasswordReset(email){
@@ -269,7 +269,7 @@ try{const s=JSON.parse(localStorage.getItem('b2me_session')||'null');if(s?.email
     });
   }
   global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,
-    sendPasswordReset,consumeEmailLink,updatePassword,requestProviderRegistration,
+    sendPasswordReset,consumeEmailLink,updatePassword,submitProviderApplication,
     list,insert,update,remove,rpc,uploadImage,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
 })(window);
@@ -593,7 +593,6 @@ openCompany=function(id){
  go("profile");
 };
 
-let b2meProviderDraft=null;
 const initialNoteAr="ملاحظة : هذه الاستمارة تعد استمارة تسجيل اولية و بعد تأكيد التسجيل سيتم تزويدكم بمنصة خاصة بحسابكم لرفع معلومات و صور و نماذج اعمالكم مع وسائل التواصل معكم.";
 const initialNoteEn="This is a preliminary registration form. Once registration is confirmed, you will receive access to your own platform for uploading your information, photos, work samples and contact details.";
 function providerFormField(id,ar,en,type="text",required=false,max=200,value=""){
@@ -611,7 +610,7 @@ renderProviderJoin=function(){
  providerFormField("pvTitle","العنوان الوظيفي","Job title","text",false,160)+
  providerFormField("pvCompany","اسم الشركة","Company name","text",false,200)+
  providerFormField("pvPhone","رقم الهاتف","Phone number","tel",true,30)+
- providerFormField("pvEmail","الايميل","Email address","email",true,320,activeUser?.email||"")+
+ providerFormField("pvEmail","الايميل","Email address","email",true,320)+
  providerFormField("pvWebsite","الموقع الرسمي","Official website","url",false,500)+
  '<div class="b2me-form-section"><h3>'+msg("حسابات التواصل الاجتماعي","Social media accounts")+'</h3>'+
  '<div class="b2me-social-grid">'+
@@ -626,7 +625,6 @@ renderProviderJoin=function(){
  msg(initialNoteAr,initialNoteEn)+'</div>'+
  '<button class="cta" type="submit">'+msg("تأكيد البيانات والمتابعة","Continue Registration")+
  '</button></form></div>';
- if(activeUser)el("pvEmail").readOnly=true;
 };
 function collectProviderForm(){
  const get=id=>el(id)?.value.trim()||"";
@@ -635,27 +633,12 @@ function collectProviderForm(){
  if(!/^\+?[0-9\s()\-]{7,30}$/.test(phone)||phone.replace(/\D/g,"").length<7)
   throw Error(msg("أدخل رقم هاتف صحيح.","Enter a valid phone number."));
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error(msg("أدخل إيميل صحيح.","Enter a valid email."));
- if(activeUser&&activeUser.email?.toLowerCase()!==email)
-  throw Error(msg("الإيميل يجب أن يطابق حسابك المسجّل.","Use your signed-in account email."));
  return {full_name,job_title:get("pvTitle"),company_name:get("pvCompany"),
  phone,email,website:get("pvWebsite"),
  social_links:Object.fromEntries([
   ["facebook","pvFacebook"],["instagram","pvInstagram"],
   ["linkedin","pvLinkedIn"],["x","pvX"]
  ].map(([network,id])=>[network,get(id)]).filter(([,value])=>value))};
-}
-async function saveExistingProviderRegistration(data){
- const newId=typeof crypto!=="undefined"&&crypto.randomUUID?
-  crypto.randomUUID().replace(/-/g,""):(Date.now().toString(36)+Math.random().toString(36).slice(2,15));
- return api.insert("companies",{
-  owner_id:activeUser.id,
-  provider_type:data.company_name?"company":"freelancer",
-  slug:"b2me-"+newId,
-  name_ar:data.company_name||data.full_name,
-  contact_name:data.full_name,job_title:data.job_title||null,
-  public_phone:data.phone,public_email:data.email,
-  website:data.website||null,social_links:data.social_links,country_code:"IQ"
- });
 }
 function registrationConfirmation(message){
  el("provider_join").innerHTML=topbar(msg("تأكيد التسجيل","Registration Confirmation"),"choice")+
@@ -672,54 +655,12 @@ submitProviderJoin=async function(e){
  button.disabled=true;
  try{
   const data=collectProviderForm();
-  b2meProviderDraft=data;
-  if(activeUser){
-    await saveExistingProviderRegistration(data);
-    registrationConfirmation(msg("تم إرسال استمارتك إلى الإدارة للمراجعة. ستظهر بياناتك بعد اعتمادها.",
-    "Your application was submitted for review. Your profile will appear once approved."));
-    return;
-  }
-  el("provider_join").innerHTML=topbar(msg("إنشاء الحساب","Create Your Account"),"provider_join")+
-   '<div class="pageBody"><div class="formCard"><h2>'+
-   msg("الخطوة الثانية: تأمين الحساب","Step 2: Secure your account")+'</h2>'+
-   '<p class="subtle">'+msg("تم حفظ بيانات الاستمارة مؤقتاً. اختر كلمة مرور لحسابك ثم أكّد الإيميل.",
-   "Your form details are temporarily ready. Choose an account password and verify your email.")+'</p>'+
-   '<form id="providerAccountForm" onsubmit="b2meCompleteProviderSignup(event)">'+
-   providerFormField("pvPassword","كلمة المرور (8 أحرف على الأقل)","Password (8 characters minimum)","password",true,128)+
-   providerFormField("pvPasswordConfirm","تأكيد كلمة المرور","Confirm password","password",true,128)+
-   '<button class="cta" type="submit">'+msg("إنشاء الحساب وإرسال رسالة التحقق","Create Account & Verify Email")+
-   '</button></form></div></div>';
+  await api.submitProviderApplication(data);
+  registrationConfirmation(msg(
+   "تم استلام طلبك الأولي وإرساله إلى إدارة B2ME للمراجعة. ما راح ينشأ حساب قبل ما تراجع الإدارة الطلب وتتواصل وياك.",
+   "Your preliminary request was sent to B2ME for review. No account is created until the team reviews your request and contacts you."));
  }catch(ex){report(ex);}
  finally{if(button)button.disabled=false;}
-};
-window.b2meCompleteProviderSignup=async function(e){
- e.preventDefault();
- const data=b2meProviderDraft;
- if(!data){toast(msg("أعد ملء الاستمارة.","Please complete the form again."));go("provider_join");return;}
- const password=el("pvPassword").value;
- const confirm=el("pvPasswordConfirm").value;
- if(password.length<8){toast(msg("كلمة المرور قصيرة.","Password must be at least 8 characters."));return;}
- if(password!==confirm){toast(msg("كلمتا المرور غير متطابقتين.","Passwords do not match."));return;}
- const button=e.target.querySelector('button[type="submit"]');
- button.disabled=true;
- try{
-  const registration={
-   full_name:data.full_name,job_title:data.job_title,
-   company_name:data.company_name,phone:data.phone,
-   website:data.website,social_links:data.social_links
-  };
-  const result=await api.signUp(data.email,password,true,
-   {b2me_provider_registration:registration});
-  if(result?.access_token&&result?.user){
-    activeUser=result.user;
-    await loadPersonal();
-  }
-  b2meProviderDraft=null;
-  registrationConfirmation(msg(
-    "أُرسل طلب التسجيل. إذا وصلتك رسالة تحقق، افتحها وأكّد بريدك الإلكتروني. وبعد تأكيد التسجيل ومراجعة الطلب تتوفر لك منصة مزود الخدمة.",
-    "Registration submitted. Check your email for a verification link. After confirmation and review, your provider dashboard will be available."));
- }catch(ex){report(ex);}
- finally{button.disabled=false;}
 };
 renderNotifications=function(){
  const items=activeUser?liveNotices:[];
