@@ -13,13 +13,14 @@
 
 6. The app inserts the form fields into `public.provider_applications`. It does not sign the visitor up, ask them to choose a password, or create a company.
 7. The B2ME admin dashboard shows new requests in its **طلبات مقدمي الخدمات الأولية** inbox. Only an account with the server-issued `app_metadata.b2me_admin` role can read or review the rows. Visitors can submit form fields but cannot read, edit or approve any application.
-8. The admin can mark a request suitable or reject it. Creating the Auth account and sending the applicant an invitation must happen after this review. Email alerts to the B2ME admin are not configured yet; the request is available in the admin inbox after refresh.
-9. The provider dashboard remains locked until a provider account and approved company record are created.
+8. The admin can invite a suitable applicant from the inbox or reject the request. A protected Supabase Edge Function checks the caller's `app_metadata.b2me_admin` role, invites the applicant, creates a pending company workspace, and records the review. The invitation redirects to the provider dashboard, where the applicant can complete the profile while it remains unpublished.
+9. The provider dashboard stays locked for visitors without an account. Invited providers can edit their own pending workspace; the company and its content remain subject to B2ME moderation.
 
 ## Notes
 - A preliminary application does **not** create an Auth user or company record.
 - Company/listing moderation continues to use the existing protected moderation RPC and audit trail.
-- The first stage of the preliminary-application flow is live in the B2ME database and app source. Admin email notification and post-approval account invitation still need to be configured and tested.
+- The application inbox and `create-provider-account` Edge Function are deployed. The function requires the existing `b2me_admin` Auth role. Supabase Auth must allow the deployed site's `/provider-dashboard.html` redirect, and production SMTP/email delivery needs an end-to-end check.
+- Admin email alerts are not enabled. They need an administrator recipient address and a configured transactional email sender.
 - The old draft migrations in `supabase/migrations/0001_initial_schema.sql` must not be run against the live DB.
 - The original approved B2ME logo and app identity have been preserved. No new brand asset has been generated.
 - Verified on source code: syntax checks, required fields, exact form note, no account-creation step in the initial form, and an admin-only application inbox.

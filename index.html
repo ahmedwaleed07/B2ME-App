@@ -272,8 +272,7 @@ try{const s=JSON.parse(localStorage.getItem('b2me_session')||'null');if(s?.email
     sendPasswordReset,consumeEmailLink,updatePassword,submitProviderApplication,
     list,insert,update,remove,rpc,uploadImage,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
-})(window);
-</script><script>/* Live B2ME mobile app integration. Visuals and original brand images stay untouched. */
+})(window);</script><script>/* Live B2ME mobile app integration. Visuals and original brand images stay untouched. */
 (function(){
 "use strict";
 const api=window.B2ME_API;
@@ -757,5 +756,4 @@ async function bootstrap(){
  }catch(ex){screen="choice";liveRender();report(ex);}
 }
 bootstrap();
-})();
-</script></body></html>
+})();</script></body></html>

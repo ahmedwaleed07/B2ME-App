@@ -99,6 +99,12 @@ render();
     return request("/rest/v1/provider_applications",{
       method:"POST",body:application,headers:{Prefer:"return=minimal"}
     });
+  async function invokeFunction(name,payload){
+    if(!/^[a-z0-9-]+$/i.test(name))throw new Error("Invalid function name");
+    return request("/functions/v1/"+encodeURIComponent(name),{
+      method:"POST",body:payload,auth:true
+    });
+  }
   }
   async function sendPasswordReset(email){
     const redirect=global.location.origin+global.location.pathname;
@@ -198,10 +204,9 @@ render();
   }
   global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,
     sendPasswordReset,consumeEmailLink,updatePassword,submitProviderApplication,
-    list,insert,update,remove,rpc,uploadImage,
+    list,insert,update,remove,rpc,uploadImage,invokeFunction,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
-})(window);
-</script><script>/* Live B2ME provider dashboard, preserving the original approved UI and brand assets. */
+})(window);</script><script>/* Live B2ME provider dashboard, preserving the original approved UI and brand assets. */
 (function(){
 "use strict";
 const api=window.B2ME_API;
@@ -482,14 +487,14 @@ window.updateInquiryStatus=async function(id,status){
 const originalRefreshAll=refreshAll;
 refreshAll=async function(preferId){
  await originalRefreshAll(preferId);
- const approved=companies.filter(c=>c.status==="approved");
+ const available=companies.filter(c=>c.status==="approved"||c.status==="pending");
  const overlay=el("b2meLiveGate");
  const form=el("b2meDashboardSignIn");
  const desc=el("b2meGateDescription");
  const newButton=el("b2meAddProvider");
  if(newButton)newButton.style.display="none";
  const draft=el("b2meNewProviderDialog");if(draft)draft.remove();
- if(!approved.length){
+ if(!available.length){
   if(overlay)overlay.style.display="flex";
   if(form)form.style.display="none";
   if(desc)desc.textContent=companies.length?
@@ -507,15 +512,22 @@ refreshAll=async function(preferId){
     };
   }
  }else{
-  companies=approved;
-  company=approved.find(c=>c.id===company?.id)||approved[0];
+  companies=available;
+  company=available.find(c=>c.id===company?.id)||available[0];
   const selector=el("b2meProviderSelector");
   if(selector){
-   selector.innerHTML=approved.map(c=>'<option value="'+h(c.id)+'">'+h(c.name_ar)+'</option>').join("");
+   selector.innerHTML=available.map(c=>'<option value="'+h(c.id)+'">'+h(c.name_ar)+'</option>').join("");
    selector.value=company.id;
   }
   if(form)form.style.display="block";
   if(overlay)overlay.style.display="none";
+  let note=el("b2meCompanyReviewNote");
+  if(company.status==="pending"){
+   if(!note){note=document.createElement("div");note.id="b2meCompanyReviewNote";
+    note.style.cssText="margin:16px 0;padding:14px 18px;border-radius:12px;background:#fff6df;color:#684900";
+    document.querySelector(".main")?.prepend(note);}
+   note.textContent="أكمل معلومات نشاطك هنا. سيبقى غير منشور للناس إلى أن تراجعه إدارة B2ME.";
+  }else if(note)note.remove();
   const links=el("b2mePendingLinks");if(links)links.remove();
   await loadCompanyData();
  }
@@ -524,6 +536,8 @@ async function start(){
  // Remove local demo data so unrelated ASAS test content cannot be published as real data.
  try{localStorage.removeItem("b2me_provider_dashboard");}catch(_){}
  installGate();installToolbar();installProviderContactFields();
+  const link=await api.consumeEmailLink();
+  if(link?.type==="error")throw new Error(link.error);
  try{
   const s=await api.currentSession();
   if(s?.user){user=s.user;el("b2meLiveGate").style.display="none";await refreshAll();}

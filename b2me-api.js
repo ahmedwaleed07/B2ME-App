@@ -82,6 +82,12 @@
     return request("/rest/v1/provider_applications",{
       method:"POST",body:application,headers:{Prefer:"return=minimal"}
     });
+  async function invokeFunction(name,payload){
+    if(!/^[a-z0-9-]+$/i.test(name))throw new Error("Invalid function name");
+    return request("/functions/v1/"+encodeURIComponent(name),{
+      method:"POST",body:payload,auth:true
+    });
+  }
   }
   async function sendPasswordReset(email){
     const redirect=global.location.origin+global.location.pathname;
@@ -181,6 +187,6 @@
   }
   global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,
     sendPasswordReset,consumeEmailLink,updatePassword,submitProviderApplication,
-    list,insert,update,remove,rpc,uploadImage,
+    list,insert,update,remove,rpc,uploadImage,invokeFunction,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
 })(window);

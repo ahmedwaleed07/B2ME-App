@@ -157,6 +157,12 @@
     return request("/rest/v1/provider_applications",{
       method:"POST",body:application,headers:{Prefer:"return=minimal"}
     });
+  async function invokeFunction(name,payload){
+    if(!/^[a-z0-9-]+$/i.test(name))throw new Error("Invalid function name");
+    return request("/functions/v1/"+encodeURIComponent(name),{
+      method:"POST",body:payload,auth:true
+    });
+  }
   }
   async function sendPasswordReset(email){
     const redirect=global.location.origin+global.location.pathname;
@@ -256,10 +262,9 @@
   }
   global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,
     sendPasswordReset,consumeEmailLink,updatePassword,submitProviderApplication,
-    list,insert,update,remove,rpc,uploadImage,
+    list,insert,update,remove,rpc,uploadImage,invokeFunction,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
-})(window);
-</script><script>(function(){
+})(window);</script><script>(function(){
 "use strict";
 const api=window.B2ME_API;
 const $=id=>document.getElementById(id);
@@ -361,22 +366,27 @@ function applicationCard(a){
   (a.website?'<br><strong>الموقع:</strong> <a href="'+escapeText(a.website)+'" target="_blank" rel="noopener noreferrer">'+escapeText(a.website)+'</a>':'')+
   (links?'<br><strong>التواصل:</strong> '+links:'')+'</p><p class="minor">تاريخ الطلب: '+
   escapeText(new Date(a.created_at).toLocaleString("ar-IQ"))+'</p><div class="actions">'+
-  (a.status==="pending"?'<button class="approve" onclick="reviewProviderApplication(\''+id+'\',\'approved\')">مناسب، متابعة إنشاء الحساب</button>'+
+  (a.status==="pending"?'<button class="approve" onclick="reviewProviderApplication(\''+id+'\',\'approved\')">دعوة مقدم الخدمة وإنشاء الحساب</button>'+
    '<button class="reject" onclick="reviewProviderApplication(\''+id+'\',\'rejected\')">رفض</button>':'')+
   '</div></article>';
 }
 window.reviewProviderApplication=async function(id,status){
  if(!["approved","rejected"].includes(status))return;
  const a=state.applications.find(x=>x.id===id);if(!a)return;
- const label=status==="approved"?"تحديد الطلب كمناسب للانتقال إلى إنشاء الحساب":"رفض الطلب";
+ const label=status==="approved"?"إرسال دعوة إنشاء الحساب إلى":"رفض طلب";
  if(!confirm(label+" لـ "+a.full_name+"؟"))return;
  text("جارٍ حفظ المراجعة...");
  try{
-  await api.update("provider_applications",{status,reviewed_at:new Date().toISOString(),reviewed_by:state.user.id},{id:"eq."+id});
+  if(status==="approved"){
+   const inviteRedirect=new URL("provider-dashboard.html",globalThis.location.href).href;
+   await api.invokeFunction("create-provider-account",{application_id:id,redirect_to:inviteRedirect});
+   text("تم إنشاء الحساب وإرسال الدعوة إلى "+a.email);
+  }else{
+   await api.update("provider_applications",{status,reviewed_at:new Date().toISOString(),reviewed_by:state.user.id},{id:"eq."+id});
+  }
   await load();
  }catch(ex){err(ex);}
 };
-
 window.moderateRecord=async function(t,id,newStatus){
  if(!cfg[t]||!["approved","published","rejected","archived","suspended"].includes(newStatus))return;
  const record=(t==="companies"?state.companies:t==="listings"?state.listings:state.offers).find(x=>x.id===id);

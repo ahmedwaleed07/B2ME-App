@@ -11,7 +11,7 @@ An Iraq-first B2B discovery app for companies, freelance providers and business 
 | `admin-dashboard.html` | Separate admin console with a role-protected preliminary application inbox and protected moderation RPC |
 | `b2me-api.js` | Shared browser-safe Supabase REST, Auth and storage client; also embedded in the standalone HTML preview files |
 | `b2me-app-live.js`, `b2me-provider-live.js` | Readable live integration logic for each UI; copies embedded in the respective HTML files |
-| Supabase database | **15 public tables**, RLS, admin approval auditing, company subscription triggers and image storage |
+| Supabase database | **15 public tables**, RLS, admin approval auditing, a provider application inbox, company subscription triggers and image storage |
 | Supabase Auth user accounts | **0 actual accounts at last inspection**; first admin still needs provisioning |
 | Transactional email, push, paid plans | **Not enabled** |
 | Production deployment and true multi-user end-to-end testing | **Not done yet** |
@@ -25,7 +25,7 @@ The browser screens have their original approved identity and embedded brand ima
 - Slogan only on first screen: **كل عوامل نجاح مشروعك بمكان واحد**.
 - First-screen footer: **Powered by** the approved ASAS 360° logo.
 - Providers edit services, business profiles and offers in the **separate provider dashboard**, not the consumer app.
-- Provider registration is an initial request only. It is stored in `public.provider_applications`; an Auth account is not created before B2ME admin review.
+- Provider registration is an initial request only. It is stored in `public.provider_applications`; after B2ME admin review, a protected Edge Function sends an Auth invitation and creates a pending provider workspace.
 - Approval workflow: company profiles, listings and promotional offers must be approved by B2ME admin.
 - Contact requests are currently saved privately inside B2ME. Sending provider emails will require a protected delivery backend.
 - No payment collection has been activated.
@@ -45,7 +45,7 @@ The browser screens have their original approved identity and embedded brand ima
 - Admin email alerts and post-review account invitation still require setup; a real multi-account auth/approval/inquiry/browser test remains pending.
 
 ## Next release tasks
-1. Configure confirmed production web address, Supabase Auth URL allow-list and email confirmation/SMTP.
+1. Configure the production website in the Supabase Auth URL allow-list, including `/provider-dashboard.html`, and verify invitation delivery through production SMTP.
 2. Create and verify the first account; assign the appropriate **server-side app_metadata** admin claim on the verified exact account only.
 3. Test consumer browsing, provider applications, approvals, inquiry routing and cross-account access with separate real accounts.
 4. Build rate-limited transactional email delivery, push notifications where appropriate, proper logout/error states and password reset.
