@@ -77,15 +77,10 @@
     return result;
   }
   async function submitProviderApplication(application){
+    // Preliminary provider applications must never create an Auth account.
     // The anonymous role can insert only the form fields; it cannot read or review rows.
     return request("/rest/v1/provider_applications",{
       method:"POST",body:application,headers:{Prefer:"return=minimal"}
-  }
-    });
-  async function invokeFunction(name,payload){
-    if(!/^[a-z0-9-]+$/i.test(name))throw new Error("Invalid function name");
-    return request("/functions/v1/"+encodeURIComponent(name),{
-      method:"POST",body:payload,auth:true
     });
   }
   async function sendPasswordReset(email){
@@ -186,6 +181,6 @@
   }
   global.B2ME_API={url:BASE,currentSession,signIn,signUp,signOut,
     sendPasswordReset,consumeEmailLink,updatePassword,submitProviderApplication,
-    list,insert,update,remove,rpc,uploadImage,invokeFunction,
+    list,insert,update,remove,rpc,uploadImage,
     isLoggedIn:()=>!!session?.user,user:()=>session?.user||null,params};
 })(window);
