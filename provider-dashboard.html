@@ -274,7 +274,9 @@ function installServiceCategorySelect(){
  const select=document.createElement("select");
  select.id="b2meNewServiceCategory";
  select.required=true;select.setAttribute("aria-label","تخصص الخدمة");
- select.style.cssText="padding:12px;border:1px solid #dfe3ef;border-radius:11px;min-width:150px";
+ select.style.cssText="padding:12px;border:1px solid #dfe3ef;border-radius:11px;min-width:0;flex:1 1 150px";
+ const row=input.closest(".row");if(row)row.style.flexWrap="wrap";
+ input.style.flex="1 1 210px";input.style.minWidth="0";
  input.insertAdjacentElement("afterend",select);
 }
 function showNewProviderForm(){
