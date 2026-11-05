@@ -67,6 +67,11 @@ const sanitizedUrl=x=>/^https?:\/\//i.test(asText(x))?asText(x):"";
 const fromRow=(r,listings=[])=>({
  id:r.id,ar:r.name_ar,en:r.name_en||r.name_ar,providerType:r.provider_type||"company",
  sector:categoriesData.find(c=>c.dbId===r.primary_category_id)?.id||"tech",
+ // A supplier may be discoverable in multiple approved service categories.
+ sectors:[...new Set([categoriesData.find(c=>String(c.dbId)===String(r.primary_category_id))?.id,
+  ...listings.filter(l=>l.company_id===r.id).map(l=>
+   categoriesData.find(c=>String(c.dbId)===String(l.category_id))?.id)
+ ].filter(Boolean))],
  cityAr:r.city||r.governorate||"العراق",cityEn:r.city||r.governorate||"Iraq",
  bioAr:r.description_ar||"",bioEn:r.description_en||r.description_ar||"",
  logo:r.name_ar?.slice(0,2)||"B2",dashboardLogo:sanitizedUrl(r.logo_url),
