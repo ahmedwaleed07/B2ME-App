@@ -1,0 +1,100 @@
+{
+  "brand": "ASAS 360°",
+  "slug": "asas-360",
+  "provider_type": "company",
+  "country_code": "IQ",
+  "city": "بغداد",
+  "primary_category_slug": "tech",
+  "website": "https://asas360.com",
+  "public_email": "info@asas360.com",
+  "public_phone": "+9647817262800",
+  "name_ar": "ASAS 360°",
+  "name_en": "ASAS 360°",
+  "description_ar": "ASAS 360° شركة عراقية تقدم حلولاً متكاملة للأعمال تشمل التكنولوجيا والأتمتة، أمن المعلومات والأمن المادي والسلامة الهندسية، تطوير المواقع والتطبيقات وأنظمة الأعمال، الدعاية والتصميم والاستشارات.",
+  "description_en": "ASAS 360° is an Iraqi integrated business solutions provider offering technology and automation, cybersecurity, physical security and safety engineering, websites, apps and business systems, marketing, creative design and consulting.",
+  "logo_url": null,
+  "logo_note": "Use the original official ASAS 360° artwork; do not regenerate, recolor or substitute.",
+  "status": "pending_admin_approval",
+  "services": [
+    {
+      "category_slug": "tech",
+      "title_ar": "تصميم وتطوير المواقع الإلكترونية",
+      "title_en": "Website Design & Development"
+    },
+    {
+      "category_slug": "tech",
+      "title_ar": "تطوير تطبيقات الهواتف الذكية",
+      "title_en": "Mobile App Development"
+    },
+    {
+      "category_slug": "tech",
+      "title_ar": "تطوير أنظمة إدارة علاقات العملاء والموارد CRM وERP",
+      "title_en": "Custom CRM & ERP Systems"
+    },
+    {
+      "category_slug": "tech",
+      "title_ar": "الأتمتة الذكية وتكامل أنظمة الأعمال",
+      "title_en": "Smart Automation & Systems Integration"
+    },
+    {
+      "category_slug": "tech",
+      "title_ar": "شبكات الحاسوب والبنية التحتية التقنية",
+      "title_en": "IT Infrastructure & Networking"
+    },
+    {
+      "category_slug": "tech",
+      "title_ar": "الدعم الفني وإدارة الأنظمة",
+      "title_en": "IT Support & Systems Management"
+    },
+    {
+      "category_slug": "security",
+      "title_ar": "الأمن السيبراني وحماية البيانات",
+      "title_en": "Cybersecurity & Data Protection"
+    },
+    {
+      "category_slug": "security",
+      "title_ar": "أنظمة الأمن والحماية المادية",
+      "title_en": "Physical Security Systems"
+    },
+    {
+      "category_slug": "security",
+      "title_ar": "هندسة السلامة وإدارة المخاطر",
+      "title_en": "Safety Engineering & Risk Management"
+    },
+    {
+      "category_slug": "ads",
+      "title_ar": "التسويق الرقمي والحملات الإعلانية",
+      "title_en": "Digital Marketing & Advertising Campaigns"
+    },
+    {
+      "category_slug": "ads",
+      "title_ar": "الاستراتيجية التسويقية وإدارة العلامات التجارية",
+      "title_en": "Marketing Strategy & Brand Management"
+    },
+    {
+      "category_slug": "ads",
+      "title_ar": "إدارة المحتوى والاتصال المؤسسي",
+      "title_en": "Content Management & Corporate Communications"
+    },
+    {
+      "category_slug": "design",
+      "title_ar": "تصميم الهوية البصرية والمواد الإبداعية",
+      "title_en": "Brand Identity & Creative Design"
+    },
+    {
+      "category_slug": "design",
+      "title_ar": "تصميم واجهات وتجارب المستخدم",
+      "title_en": "UI & UX Design"
+    },
+    {
+      "category_slug": "consult",
+      "title_ar": "استشارات التحول الرقمي",
+      "title_en": "Digital Transformation Consulting"
+    },
+    {
+      "category_slug": "consult",
+      "title_ar": "استشارات تقنية المعلومات وأمن المعلومات",
+      "title_en": "IT & Information Security Consulting"
+    }
+  ]
+}
