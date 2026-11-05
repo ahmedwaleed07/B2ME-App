@@ -268,6 +268,15 @@ function installProviderContactFields(){
   '<div class="field"><label for="bizX">X / تويتر</label>'+
   '<input type="url" id="bizX" maxlength="500"></div>');
 }
+function installServiceCategorySelect(){
+ const input=el("newService");
+ if(!input||el("b2meNewServiceCategory"))return;
+ const select=document.createElement("select");
+ select.id="b2meNewServiceCategory";
+ select.required=true;select.setAttribute("aria-label","تخصص الخدمة");
+ select.style.cssText="padding:12px;border:1px solid #dfe3ef;border-radius:11px;min-width:150px";
+ input.insertAdjacentElement("afterend",select);
+}
 function showNewProviderForm(){
  const existing=el("b2meNewProviderDialog");if(existing){existing.remove();return;}
  const box=document.createElement("div");box.id="b2meNewProviderDialog";box.className="card";
@@ -307,6 +316,12 @@ async function refreshAll(preferId){
  if(company)selector.value=company.id;
  const select=el("bizCat");
  select.innerHTML=categoryRows.map(c=>'<option value="'+h(c.id)+'">'+h(c.name_ar)+'</option>').join("");
+ const serviceCategory=el("b2meNewServiceCategory");
+ if(serviceCategory){
+  serviceCategory.innerHTML=categoryRows.map(c=>
+   '<option value="'+h(c.id)+'">'+h(c.name_ar)+'</option>').join("");
+  serviceCategory.value=String(company?.primary_category_id||categoryRows[0]?.id||"");
+ }
  if(!company){
   serviceRows=[];offerRows=[];inquiryRows=[];
   state={...DEFAULT,name:"",email:user.email||"",phone:"",cat:"",
@@ -370,7 +385,7 @@ function draw(){
    '<button class="btn gray" onclick="deleteOffer('+i+')">حذف</button></div></div>').join("")
     ||'<p>لا توجد عروض بعد.</p>';
   el("servicesList").innerHTML=serviceRows.map((x,i)=>'<div class="item"><div><strong>'+
-   h(x.title_ar)+'</strong><small>الحالة: '+h(x.status)+'</small></div>'+
+   h(x.title_ar)+'</strong><small>التخصص: '+h(categoryRows.find(c=>String(c.id)===String(x.category_id))?.name_ar||"غير محدد")+' · الحالة: '+h(x.status)+'</small></div>'+
    '<button class="btn gray" onclick="removeService('+i+')">حذف</button></div>').join("")||
    "<p>لا توجد خدمات بعد.</p>";
   el("offersTotal").textContent=offerRows.filter(x=>x.status==="approved"&&x.requested_enabled).length;
@@ -423,7 +438,7 @@ addService=async function(ev){
  ev.preventDefault();if(!company){showNewProviderForm();return;}
  const title=el("newService").value.trim();if(title.length<2)return;
  try{
-  await api.insert("listings",{company_id:company.id,category_id:company.primary_category_id||null,
+  await api.insert("listings",{company_id:company.id,category_id:Number(el("b2meNewServiceCategory")?.value)||company.primary_category_id||null,
    listing_type:"service",title_ar:title});
   el("newService").value="";await loadCompanyData();tip();
  }catch(ex){error(ex);}
@@ -531,6 +546,7 @@ async function start(){
  try{localStorage.removeItem("b2me_provider_dashboard");}catch(_){}
  try{
  installGate();installToolbar();installProviderContactFields();
+  installServiceCategorySelect();
   const link=await api.consumeEmailLink();
   if(link?.type==="error")throw new Error(link.error);
   const s=await api.currentSession();
