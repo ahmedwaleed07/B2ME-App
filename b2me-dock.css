@@ -73,22 +73,33 @@
   .app .langControl .offerLocaleButton { font-size: 11px; padding-inline: 6px; }
 }
 
+.app .brandLockup > img,
+.app .b2me-hub-lockup > img,
+#web-intro .brandLockup > img {
+  filter:
+    drop-shadow(.5px 1px 0 #afa3d3)
+    drop-shadow(.75px 1.5px 0 #68528c)
+    drop-shadow(1px 1.5px 0 #3f2e60)
+    drop-shadow(1.25px 2px 0 #21183d)
+    drop-shadow(4px 8px 9px #080a228c);
+}
+
 .app .brandLockup > span,
 .app .b2me-hub-lockup > .b2me-hub-pink-tag,
 #web-intro .brandLockup > span {
   right: 7%;
   bottom: 0;
-  transform: translateY(36%);
+  transform: translateY(40%);
   padding: 0;
   color: #ff79d4;
-  font: italic 700 29px/1 var(--b2me-script);
+  font: italic 700 43.5px/1 var(--b2me-script);
   letter-spacing: -.06em;
-  text-shadow: 0 1px 2px #4a1559, 0 0 7px #130d30;
+  text-shadow: 0 1px 0 #bd409a, 1px 2px 0 #76255f, 2px 3px 0 #421740, 2px 4px 6px #130d30;
 }
 
 .app .tinyBrand .brandLockup > span,
 .app .tinyBrand .b2me-hub-lockup > .b2me-hub-pink-tag {
-  font-size: clamp(15px, 1.8vw, 21px);
+  font-size: clamp(22.5px, 2.7vw, 31.5px);
 }
 
 #home .tinyBrand {
@@ -105,4 +116,22 @@
   transform: rotate(-4deg);
   overflow-wrap: anywhere;
   text-shadow: 0 1px 0 #c8c0da, 1px 2px 0 #9a90b5, 2px 3px 0 #675b88, 3px 5px 7px #0b0a20;
+}
+
+
+.screen#provider_join {
+  background:
+    linear-gradient(180deg, #f7f5fcc2, #f5f3fad1),
+    url("assets/provider-registration-city.webp") center / cover no-repeat,
+    #eeedf5;
+}
+
+#provider_join .screenTop {
+  background: #fbfaffbc !important;
+}
+
+#provider_join .formCard {
+  background: #ffffffdb;
+  border-color: #ffffffd9;
+  box-shadow: 0 10px 32px #2a234719;
 }
