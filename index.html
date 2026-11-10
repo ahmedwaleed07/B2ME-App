@@ -402,9 +402,7 @@ const fromRow=(r,listings=[])=>({
 });
 function liveRender(){
  render();
- const badge=el("demoBadge");if(badge)badge.textContent=msg("العراق • بيانات حقيقية","Iraq • Live data");
- const subtitle=el("demoSubtitle");if(subtitle)subtitle.textContent=
-  msg("B2ME • قاعدة بيانات متصلة","B2ME • Connected database");
+ const badge=el("demoBadge");if(badge)badge.textContent=msg("العراق","Iraq");
 }
 async function loadCatalog(){
  try{
@@ -742,8 +740,8 @@ render=(function(old){return function(){
  if(!catalogReady&&companies.length)companies.splice(0);
  const status=el("demoSubtitle");
  if(status)status.textContent=catalogReady?
-   msg("B2ME • متصل بقاعدة البيانات","B2ME • Connected to database"):
-   msg("B2ME • تحميل البيانات","B2ME • Loading data");
+   msg("B2ME hub • متصل بقاعدة البيانات","B2ME hub • Connected to database"):
+   msg("B2ME hub • تحميل البيانات","B2ME hub • Loading data");
 };})(render);
 window.b2meMyRequests=async function(){
  if(!requireAuth())return;
