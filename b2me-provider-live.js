@@ -1,13 +1,13 @@
-/* Live B2ME provider dashboard, preserving the original approved UI and brand assets. */
+/* Live B2ME hub provider dashboard, preserving the original approved UI and brand assets. */
 (function(){
 "use strict";
 const api=window.B2ME_API;
-if(!api){console.error("B2ME API unavailable");return;}
+if(!api){console.error("B2ME hub API unavailable");return;}
 let user=null,company=null,companies=[],categoryRows=[],serviceRows=[],offerRows=[],inquiryRows=[];
 const el=id=>document.getElementById(id);
 const h=x=>escapeHtml(String(x??""));
 const safeUrl=x=>/^https?:\/\//i.test(x||"")?x:"";
-const error=e=>{console.error("B2ME Dashboard",e);alert("تعذر تنفيذ العملية: "+(e?.message||String(e)));};
+const error=e=>{console.error("B2ME hub Dashboard",e);alert("تعذر تنفيذ العملية: "+(e?.message||String(e)));};
 const statusBadge=()=>company?.status==="approved"?"معتمد":company?.status==="pending"?"بانتظار موافقة الإدارة":
  company?.status==="rejected"?"مرفوض":"موقوف";
 function installGate(){
@@ -15,15 +15,15 @@ function installGate(){
  overlay.id="b2meLiveGate";
  overlay.style.cssText="position:fixed;z-index:9999;inset:0;background:#0a0e27fa;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;direction:rtl";
  overlay.innerHTML='<section style="background:#fff;max-width:430px;width:100%;padding:28px;border-radius:20px;box-shadow:0 18px 80px #0005;text-align:right">'+
- '<h2 style="margin:0 0 10px;color:#1a1b2b">B2ME • لوحة مقدم الخدمة</h2>'+
- '<p id="b2meGateDescription" style="color:#687089;margin-bottom:16px">سجّل دخولك بحساب B2ME الحقيقي حتى تشوف نشاطك وطلباتك.</p>'+
+ '<h2 style="margin:0 0 10px;color:#1a1b2b">B2ME hub • لوحة مقدم الخدمة</h2>'+
+ '<p id="b2meGateDescription" style="color:#687089;margin-bottom:16px">سجّل دخولك بحساب B2ME hub الحقيقي حتى تشوف نشاطك وطلباتك.</p>'+
  '<form id="b2meDashboardSignIn"><label style="display:block">البريد الإلكتروني</label>'+
  '<input required type="email" id="b2meDashboardEmail" autocomplete="email" style="width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccc;border-radius:9px">'+
  '<label style="display:block">كلمة المرور</label>'+
  '<input required type="password" id="b2meDashboardPassword" autocomplete="current-password" style="width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccc;border-radius:9px">'+
  '<label><input type="checkbox" id="b2meDashboardRemember" checked> تذكرني</label>'+
  '<button class="btn" style="width:100%;margin-top:18px" type="submit">تسجيل الدخول</button></form>'+
- '<p style="font-size:13px;color:#667;margin-top:14px">مستخدم جديد؟ <a href="index.html" style="color:#d51ccf">أنشئ حساب B2ME بالتطبيق</a>'+
+ '<p style="font-size:13px;color:#667;margin-top:14px">مستخدم جديد؟ <a href="index.html" style="color:#d51ccf">أنشئ حساب B2ME hub</a>'+
  ' · <a href="forgot-password.html" style="color:#d51ccf">نسيت كلمة المرور؟</a></p>'+
  '</section>';
  document.body.appendChild(overlay);
@@ -201,9 +201,9 @@ function draw(){
    h(i.id)+'\',\'closed\')">إغلاق</button></div></div>').join(""):"لا توجد طلبات تواصل بعد.";
  }
  const pill=document.querySelector(".main .top .pill");
- if(pill)pill.textContent=company?"B2ME Live · "+statusBadge():"B2ME Live";
+ if(pill)pill.textContent=company?"B2ME hub Live · "+statusBadge():"B2ME hub Live";
  const footer=document.querySelector(".main .footnote");
- if(footer)footer.textContent="B2ME · لوحة مقدم الخدمة • البيانات محفوظة في Supabase. النشر والمزايا المدفوعة تتطلب موافقة الإدارة.";
+ if(footer)footer.textContent="B2ME hub · لوحة مقدم الخدمة • البيانات محفوظة في Supabase. النشر والمزايا المدفوعة تتطلب موافقة الإدارة.";
 }
 persist=function(){/* browser-only demo persistence disabled for live provider data */};
 saveCompany=async function(ev){
@@ -291,7 +291,7 @@ window.updateInquiryStatus=async function(id,status){
  catch(ex){error(ex);}
 };
 
-// Dedicated provider dashboard only becomes available once B2ME administration
+// Dedicated provider dashboard only becomes available once B2ME hub administration
 // has approved the preliminary registration and the email is confirmed.
 const originalRefreshAll=refreshAll;
 refreshAll=async function(preferId){
@@ -307,16 +307,16 @@ refreshAll=async function(preferId){
   if(overlay)overlay.style.display="flex";
   if(form)form.style.display="none";
   if(desc)desc.textContent=companies.length?
-   "تم استلام استمارة التسجيل الأولي. منصة مزود الخدمة تتفعل بعد تأكيد الإيميل وموافقة إدارة B2ME على التسجيل.":
-   "ما عدك تسجيل مزود خدمة معتمد بعد. ارجع لتطبيق B2ME واختر «تريد تعرض خدماتك؟» حتى تكمل الاستمارة الأولية.";
+   "تم استلام استمارة التسجيل الأولي. منصة مزود الخدمة تتفعل بعد تأكيد الإيميل وموافقة إدارة B2ME hub على التسجيل.":
+   "ما عدك تسجيل مزود خدمة معتمد بعد. ارجع إلى موقع B2ME hub واختر «تريد تعرض خدماتك؟» حتى تكمل الاستمارة الأولية.";
   if(!el("b2mePendingLinks")&&form){
     const links=document.createElement("div");links.id="b2mePendingLinks";
-    links.innerHTML='<p style="margin-top:16px"><a href="index.html" style="color:#864bd7">الرجوع إلى B2ME</a></p>'+
+    links.innerHTML='<p style="margin-top:16px"><a href="index.html" style="color:#864bd7">الرجوع إلى B2ME hub</a></p>'+
       '<button type="button" id="b2mePendingLogout" class="btn gray" style="margin-top:6px">تسجيل خروج</button>';
     form.insertAdjacentElement("afterend",links);
     el("b2mePendingLogout").onclick=async()=>{
       try{await api.signOut();user=null;company=null;
-        el("b2meGateDescription").textContent="سجّل دخولك بحساب B2ME.";
+        el("b2meGateDescription").textContent="سجّل دخولك بحساب B2ME hub.";
         form.style.display="block";links.remove();}catch(err){error(err);}
     };
   }
@@ -336,7 +336,7 @@ refreshAll=async function(preferId){
    if(!note){note=document.createElement("div");note.id="b2meCompanyReviewNote";
     note.style.cssText="margin:16px 0;padding:14px 18px;border-radius:12px;background:#fff6df;color:#684900";
     document.querySelector(".main")?.prepend(note);}
-   note.textContent="أكمل معلومات نشاطك هنا. سيبقى غير منشور للناس إلى أن تراجعه إدارة B2ME.";
+   note.textContent="أكمل معلومات نشاطك هنا. سيبقى غير منشور للناس إلى أن تراجعه إدارة B2ME hub.";
   }else if(note)note.remove();
   await loadCompanyData();
  }
