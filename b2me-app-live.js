@@ -1,8 +1,8 @@
-/* Live B2ME hub mobile app integration. Visuals and original brand images stay untouched. */
+/* Live B2ME mobile app integration. Visuals and original brand images stay untouched. */
 (function(){
 "use strict";
 const api=window.B2ME_API;
-if(!api){console.error("B2ME hub API client missing");return;}
+if(!api){console.error("B2ME API client missing");return;}
 // The choice screen is part of the agreed navigation, not a small secondary link.
 if(!document.getElementById("b2meChoiceStyles")){
  if(!document.getElementById("b2meSloganFont")){
@@ -46,22 +46,22 @@ if(!document.getElementById("b2meChoiceStyles")){
 
  document.head.appendChild(style);
 }
-langStrings.ar.guestNote="البيانات المعروضة مباشرة من B2ME hub. تظهر الشركات بعد موافقة الإدارة.";
-langStrings.en.guestNote="Live B2ME hub data. Providers appear after administrative approval.";
-langStrings.ar.demoStatus="متصل بقاعدة بيانات B2ME hub";
-langStrings.en.demoStatus="Connected to B2ME hub database";
+langStrings.ar.guestNote="البيانات المعروضة مباشرة من B2ME. تظهر الشركات بعد موافقة الإدارة.";
+langStrings.en.guestNote="Live B2ME data. Providers appear after administrative approval.";
+langStrings.ar.demoStatus="متصل بقاعدة بيانات B2ME";
+langStrings.en.demoStatus="Connected to B2ME database";
 langStrings.ar.authError="تأكد من الإيميل وكلمة المرور (8 أحرف على الأقل).";
 langStrings.en.authError="Enter a valid email and password (at least 8 characters).";
-langStrings.ar.notificationNote="إشعاراتك الحقيقية من B2ME hub";
-langStrings.ar.explore="استكشف الشركات";
+langStrings.ar.notificationNote="إشعاراتك الحقيقية من B2ME";
+langStrings.ar.explore="استكشف مجهزي الخدمات";
 langStrings.ar.offerHelp="تريد تعرض خدماتك؟";
-langStrings.en.explore="Explore Companies";
+langStrings.en.explore="Explore Service Providers";
 langStrings.en.offerHelp="Want to Offer Your Services?";
-langStrings.en.notificationNote="Your actual B2ME hub notifications";
+langStrings.en.notificationNote="Your actual B2ME notifications";
 let activeUser=null,liveNotices=[],liveOfferings=[],catalogReady=false;
 let started=false;
 const msg=(ar,en)=>language==="ar"?ar:en;
-const report=e=>{console.error("B2ME hub",e);toast(msg("حدث خطأ: ","Error: ")+(e?.message||String(e)));};
+const report=e=>{console.error("B2ME",e);toast(msg("حدث خطأ: ","Error: ")+(e?.message||String(e)));};
 const asText=x=>String(x??"");
 const sanitizedUrl=x=>/^https?:\/\//i.test(asText(x))?asText(x):"";
 const fromRow=(r,listings=[])=>({
@@ -85,7 +85,7 @@ function liveRender(){
  render();
  const badge=el("demoBadge");if(badge)badge.textContent=msg("العراق • بيانات حقيقية","Iraq • Live data");
  const subtitle=el("demoSubtitle");if(subtitle)subtitle.textContent=
-  msg("B2ME hub • قاعدة بيانات متصلة","B2ME hub • Connected database");
+  msg("B2ME • قاعدة بيانات متصلة","B2ME • Connected database");
 }
 async function loadCatalog(){
  try{
@@ -158,7 +158,8 @@ submitAuth=async function(e){
  button.disabled=true;
  try{
   if(authMode==="signup"){
-    const result=await api.signUp(email,pass,el("remember").checked);
+    const fn=el("firstNameAuth")?.value.trim()||"",ln=el("lastNameAuth")?.value.trim()||"",dob=el("dobAuth")?.value||"";
+    const result=await api.signUp(email,pass,el("remember").checked,{first_name:fn,last_name:ln,full_name:[fn,ln].filter(Boolean).join(" "),date_of_birth:dob});
     if(result?.access_token&&result?.user){
       activeUser=result.user;
       // Signup may create a session when email confirmation is disabled.
@@ -179,7 +180,7 @@ submitAuth=async function(e){
  finally{button.disabled=false;}
 };
 window.b2meLogout=async function(){
- try{await api.signOut();activeUser=null;favorites=[];liveNotices=[];screen="auth";liveRender();}
+ try{await api.signOut();activeUser=null;providerWorkspaceAllowed=false;favorites=[];liveNotices=[];screen="auth";liveRender();}
  catch(e){report(e);}
 };
 renderChoice=(function(old){return function(){
@@ -193,7 +194,7 @@ renderChoice=(function(old){return function(){
    msg("كل عوامل نجاح مشروعك بمكان واحد","Everything your business needs in one place.")+
    '</p>');
  }
- // No duplicate B2ME hub wordmark or "Welcome to B2ME hub" above the choices.
+ // No duplicate B2ME wordmark or "Welcome to B2ME" above the choices.
  const heading=container.querySelector("h2");
  if(heading)heading.remove();
  // Clean up the two explanatory sentences from the welcome screen.
@@ -210,7 +211,7 @@ renderChoice=(function(old){return function(){
  }
  const explore=container.querySelector(".cta");
  const offer=container.querySelector(".textLink");
- if(explore)explore.innerHTML=msg("استكشف الشركات","Explore Companies")+" "+uiIcon("arrow");
+ if(explore)explore.innerHTML=msg("استكشف مجهزي الخدمات","Explore Service Providers")+" "+uiIcon("arrow");
  if(offer){
   offer.classList.add("b2me-choice-secondary");
   offer.textContent=msg("تريد تعرض خدماتك؟","Want to Offer Your Services?");
@@ -265,7 +266,7 @@ renderRequest=function(){
  if(!c){el("request").innerHTML=topbar(t("serviceTitle"),"listings");return;}
  el("request").innerHTML=topbar(t("serviceTitle"),"profile",esc(cname(c)))+
  '<div class="pageBody"><div class="formNotice">'+
- msg("يُحفظ طلبك في حساب الشركة داخل B2ME hub؛ الإرسال إلى الإيميل غير مفعّل حالياً.",
+ msg("يُحفظ طلبك في حساب الشركة داخل B2ME؛ الإرسال إلى الإيميل غير مفعّل حالياً.",
  "Your inquiry is saved to the provider inbox; email delivery is not yet enabled.")+
  '</div><form class="formCard" onsubmit="submitRequest(event)">'+
  fieldInput("rqName",t("personName"),"text",true)+
@@ -387,8 +388,8 @@ submitProviderJoin=async function(e){
   const data=collectProviderForm();
   await api.submitProviderApplication(data);
   registrationConfirmation(msg(
-   "تم استلام طلبك الأولي وإرساله إلى إدارة B2ME hub للمراجعة. ما راح ينشأ حساب قبل ما تراجع الإدارة الطلب وتتواصل وياك.",
-   "Your preliminary request was sent to B2ME hub for review. No account is created until the team reviews your request and contacts you."));
+   "تم استلام طلبك الأولي وإرساله إلى إدارة B2ME للمراجعة. ما راح ينشأ حساب قبل ما تراجع الإدارة الطلب وتتواصل وياك.",
+   "Your preliminary request was sent to B2ME for review. No account is created until the team reviews your request and contacts you."));
  }catch(ex){report(ex);}
  finally{if(button)button.disabled=false;}
 };
@@ -422,8 +423,8 @@ render=(function(old){return function(){
  if(!catalogReady&&companies.length)companies.splice(0);
  const status=el("demoSubtitle");
  if(status)status.textContent=catalogReady?
-   msg("B2ME hub • متصل بقاعدة البيانات","B2ME hub • Connected to database"):
-   msg("B2ME hub • تحميل البيانات","B2ME hub • Loading data");
+   msg("B2ME • متصل بقاعدة البيانات","B2ME • Connected to database"):
+   msg("B2ME • تحميل البيانات","B2ME • Loading data");
 };})(render);
 window.b2meMyRequests=async function(){
  if(!requireAuth())return;
@@ -472,6 +473,175 @@ renderNotifications=(function(old){return function(){
    msg("تعليم الكل كمقروء","Mark all as read")+'</button>');
  }
 };})(renderNotifications);
+
+/* Provider workspace entry inside the shared visitor/provider app.
+   Company and content publication status remain server-controlled and admin-reviewed. */
+let providerWorkspaceAllowed=false;
+async function loadProviderWorkspaceAccess(){
+ providerWorkspaceAllowed=activeUser?.app_metadata?.b2me_provider===true;
+ if(!activeUser)return;
+ try{
+  const mine=await api.list("companies",{owner_id:"eq."+activeUser.id,
+   select:"id,status,name_ar",order:"created_at.desc",limit:30},true);
+  providerWorkspaceAllowed=providerWorkspaceAllowed||
+   mine.some(c=>c.status==="approved");
+ }catch(ex){console.warn("Provider workspace access check failed",ex);}
+}
+const renderChoiceForProviders=renderChoice;
+renderChoice=function(){
+ renderChoiceForProviders();
+ if(!providerWorkspaceAllowed)return;
+ const wrap=el("choice")?.querySelector(".choiceWrap");
+ if(!wrap||wrap.querySelector(".provider-entry"))return;
+ const button=document.createElement("button");
+ button.type="button";button.className="cta provider-entry";
+ button.textContent=msg("إدارة نشاطي","Manage my business");
+ button.addEventListener("click",openProviderWorkspace);
+ const join=wrap.querySelector(".textLink");
+ wrap.insertBefore(button,join||null);
+};
+function renderProviderHub(){
+ const pane=el("provider_hub");
+ if(!pane||pane.querySelector("iframe"))return;
+ pane.innerHTML=topbar(msg("إدارة نشاطي","My business"),"choice")+
+  '<div class="provider-hub-frame-wrap"><iframe class="provider-hub-frame" '+
+  'title="'+msg("لوحة إدارة نشاطك","Your provider dashboard")+
+  '" src="provider-dashboard.html?embedded=1" loading="lazy" referrerpolicy="same-origin"></iframe></div>';
+}
+function openProviderWorkspace(){
+ if(!activeUser||!providerWorkspaceAllowed){
+  toast(msg("لوحة المجهّز متاحة للحسابات المعتمدة من B2ME فقط.",
+   "The provider workspace is available only to B2ME-authorized accounts."));
+  return;
+ }
+ renderProviderHub();go("provider_hub");
+}
+const goWithProviderWorkspace=go;
+go=function(destination){
+ if(destination==="provider_hub"&&(!activeUser||!providerWorkspaceAllowed)){
+  toast(msg("لوحة المجهّز متاحة للحسابات المعتمدة من B2ME فقط.",
+   "The provider workspace is available only to B2ME-authorized accounts."));
+  return;
+ }
+ const languageControl=document.querySelector(".langControl");
+ if(languageControl)languageControl.style.display=destination==="provider_hub"?"none":"";
+ goWithProviderWorkspace(destination);
+};
+
+
+/* B2ME hub — unified navigation, account, logo treatment and provider CTA. */
+langStrings.en.slogan="Everything your business needs in one place.";
+langStrings.ar.slogan="كل عوامل نجاح مشروعك بمكان واحد";
+if(!el("account")){
+  const providerView=el("provider_hub");
+  if(providerView)providerView.insertAdjacentHTML("beforebegin",
+    '<section class="screen" id="account" aria-label="My Account"></section>');
+}
+function b2meHubText(ar,en){return language==="ar"?ar:en;}
+function renderB2MEHubAccount(){
+ const panel=el("account");if(!panel)return;
+ const signedIn=!!activeUser,meta=activeUser?.user_metadata||{};
+ const first=asText(meta.first_name||meta.firstName||"").trim();
+ const last=asText(meta.last_name||meta.lastName||"").trim();
+ const fullName=([first,last].filter(Boolean).join(" ")||asText(meta.full_name||meta.name||"").trim());
+ const displayName=fullName||b2meHubText("اسمي غير مضاف بعد","Name not added yet");
+ let body=topbar(b2meHubText("حسابي","My Account"),"home");
+ if(!signedIn){
+   body+='<div class="b2me-account-card b2me-account-empty"><h3>'+
+     b2meHubText("سجّل دخولك للوصول إلى حسابك","Sign in to access your account")+
+     '</h3><button class="cta" type="button" onclick="go(\'auth\')">'+
+     b2meHubText("تسجيل الدخول","Sign In")+'</button></div>';
+ }else{
+   body+='<div class="b2me-account-card"><div class="b2me-account-person">'+
+    '<div class="b2me-account-avatar" aria-hidden="true">'+uiIcon("user")+'</div>'+
+    '<div class="b2me-account-identity"><h3>'+esc(displayName)+'</h3><p dir="ltr">'+
+    esc(activeUser.email||"")+'</p></div></div>'+
+    '<button class="b2me-account-action" type="button" onclick="b2meMyRequests()">'+
+    '<span>'+b2meHubText("طلباتي المرسلة","My inquiries")+'</span>'+
+    '<span aria-hidden="true">›</span></button>'+
+    '<button class="b2me-account-action" type="button" onclick="b2meHubProviderFromAccount()">'+
+    '<span>'+b2meHubText("لوحة مقدم الخدمة","Provider Dashboard")+'</span>'+
+    '<span aria-hidden="true">›</span></button>'+
+    '<button class="b2me-account-action b2me-signout-action" type="button" onclick="b2meLogout()">'+
+    '<span>'+b2meHubText("تسجيل الخروج","Sign Out")+'</span>'+
+    '<span aria-hidden="true">↗</span></button></div>';
+ }
+ panel.innerHTML=body;
+}
+window.b2meHubProviderFromAccount=function(){
+ if(!activeUser){authMode="signin";go("auth");return;}
+ if(providerWorkspaceAllowed){openProviderWorkspace();return;}
+ toast(b2meHubText("أكمل طلب الانضمام أولاً. لوحة المجهّز تتطلب موافقة الإدارة.",
+   "Complete your provider application first. Dashboard access requires approval."));
+ go("provider_join");
+};
+const renderAuthBeforeHub=renderAuth;
+renderAuth=function(){
+ renderAuthBeforeHub();
+ const form=el("auth")?.querySelector(".authCard form");
+ if(authMode==="signup"&&form&&!el("firstNameAuth")){
+  form.insertAdjacentHTML("afterbegin",
+   '<div class="b2me-signup-names"><div><label for="firstNameAuth">'+
+   b2meHubText("الاسم الأول","First name")+
+   '</label><input id="firstNameAuth" type="text" required maxlength="80" autocomplete="given-name"></div>'+
+   '<div><label for="lastNameAuth">'+b2meHubText("اسم العائلة","Last name")+
+   '</label><input id="lastNameAuth" type="text" required maxlength="80" autocomplete="family-name"></div></div>'+
+   '<label for="dobAuth">'+b2meHubText("تاريخ الميلاد","Date of birth")+
+   '</label><input id="dobAuth" type="date" required autocomplete="bday" max="'+
+   new Date().toISOString().slice(0,10)+'">');
+ }
+};
+const renderChoiceBeforeHub=renderChoice;
+renderChoice=function(){
+ renderChoiceBeforeHub();
+ const wrap=el("choice")?.querySelector(".choiceWrap");
+ if(!wrap)return;
+ wrap.querySelectorAll(".choiceHint,.provider-entry,.textLink:not(.b2me-choice-secondary)").forEach(x=>x.remove());
+};
+function b2meHubOfferHeader(){
+ const pages=["home","categories","listings","profile","request","favorites","notifications"];
+ for(const id of pages){
+  const pane=el(id);if(!pane||pane.querySelector(".b2me-hub-quick-offer"))continue;
+  const bar=document.createElement("div");bar.className="b2me-hub-quick-offer";
+  bar.innerHTML='<button type="button" onclick="go(\'provider_join\')" aria-label="'+
+   b2meHubText("اعرض خدماتك","Offer Your Services")+'">'+
+   '<span class="b2me-hub-quick-plus" aria-hidden="true">+</span>'+
+   b2meHubText("اعرض خدماتك","Offer Your Services")+'</button>';
+  pane.prepend(bar);
+ }
+}
+function b2meHubLogo(img){
+ if(!img||img.parentNode?.classList.contains("b2me-hub-lockup"))return;
+ const lock=document.createElement("span");
+ lock.className="b2me-hub-lockup";
+ img.parentNode.insertBefore(lock,img);lock.appendChild(img);
+ const label=document.createElement("span");
+ label.className="b2me-hub-pink-tag";label.textContent="hub";
+ label.setAttribute("aria-hidden","true");lock.appendChild(label);
+ img.alt="B2ME hub logo";
+}
+function b2meHubNormalizeText(){
+ const root=document.querySelector(".workspace")||document.querySelector("main")||document.body;
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+ const nodes=[];
+ while(walker.nextNode()){
+  const n=walker.currentNode,p=n.parentElement;
+  if(p&&p.closest("script,style,textarea,input,.b2me-hub-pink-tag"))continue;
+  if(/\bB2ME\b(?!\s+hub)/.test(n.nodeValue))nodes.push(n);
+ }
+ nodes.forEach(n=>n.nodeValue=n.nodeValue.replace(/\bB2ME\b(?!\s+hub)/g,"B2ME hub"));
+}
+const renderBeforeB2MEHub=render;
+render=function(){
+ renderBeforeB2MEHub();
+ renderB2MEHubAccount();
+ b2meHubOfferHeader();
+ b2meHubLogo(el("auth")?.querySelector(".brandOriginal"));
+ b2meHubLogo(el("choice")?.querySelector(".choiceIcon"));
+ b2meHubLogo(el("home")?.querySelector(".tinyBrand img"));
+ b2meHubNormalizeText();
+};
+
 async function bootstrap(){
  if(started)return;started=true;
  // A former demo "session" must never log a user in.
@@ -482,7 +652,7 @@ async function bootstrap(){
   const callback=await api.consumeEmailLink();
   if(callback.type==="error")toast(msg("رابط التحقق غير صالح أو منتهي.","Verification link is invalid or expired."));
   const s=await api.currentSession();
-  if(s?.user){activeUser=s.user;sessionStorage.setItem("b2me_email",s.user.email||"");await loadPersonal();screen="choice";liveRender();}
+  if(s?.user){activeUser=s.user;sessionStorage.setItem("b2me_email",s.user.email||"");await loadPersonal();await loadProviderWorkspaceAccess();screen="choice";liveRender();}
   else {screen="choice";liveRender();}
  }catch(ex){screen="choice";liveRender();report(ex);}
 }
