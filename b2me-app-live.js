@@ -333,7 +333,7 @@ function providerFormField(id,ar,en,type="text",required=false,max=200,value="")
  '" autocomplete="off" value="'+esc(value)+'"></div>';
 }
 renderProviderJoin=function(){
- el("provider_join").innerHTML=topbar(msg("تسجيل مزود خدمة","Provider Registration"),"choice")+
+ el("provider_join").innerHTML=topbar(msg("تسجيل مزود خدمة","Provider Registration"),providerApplicationBack)+
  '<div class="pageBody"><h2 class="b2me-form-heading">'+
  msg("استمارة التسجيل الأولي","Initial Registration Form")+'</h2>'+
  '<form class="formCard" id="b2meProviderForm" onsubmit="submitProviderJoin(event)">'+
@@ -598,18 +598,6 @@ renderChoice=function(){
  if(!wrap)return;
  wrap.querySelectorAll(".choiceHint,.provider-entry,.textLink:not(.b2me-choice-secondary)").forEach(x=>x.remove());
 };
-function b2meHubOfferHeader(){
- const pages=["home","categories","listings","profile","request","favorites","notifications"];
- for(const id of pages){
-  const pane=el(id);if(!pane||pane.querySelector(".b2me-hub-quick-offer"))continue;
-  const bar=document.createElement("div");bar.className="b2me-hub-quick-offer";
-  bar.innerHTML='<button type="button" onclick="go(\'provider_join\')" aria-label="'+
-   b2meHubText("اعرض خدماتك","Offer Your Services")+'">'+
-   '<span class="b2me-hub-quick-plus" aria-hidden="true">+</span>'+
-   b2meHubText("اعرض خدماتك","Offer Your Services")+'</button>';
-  pane.prepend(bar);
- }
-}
 function b2meHubLogo(img){
  if(!img||img.parentNode?.classList.contains("b2me-hub-lockup"))return;
  const lock=document.createElement("span");
@@ -635,7 +623,6 @@ const renderBeforeB2MEHub=render;
 render=function(){
  renderBeforeB2MEHub();
  renderB2MEHubAccount();
- b2meHubOfferHeader();
  b2meHubLogo(el("auth")?.querySelector(".brandOriginal"));
  b2meHubLogo(el("choice")?.querySelector(".choiceIcon"));
  b2meHubLogo(el("home")?.querySelector(".tinyBrand img"));

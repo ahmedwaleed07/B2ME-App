@@ -1,0 +1,108 @@
+:root {
+  --b2me-script: "Segoe Print", "Bradley Hand", "Apple Chancery", "URW Chancery L", "Baloo Bhaijaan 2", cursive;
+  --b2me-control-bg: #222746;
+  --b2me-dock-bottom: max(24px, calc(env(safe-area-inset-bottom) + 10px));
+}
+
+.app .tabs.dockNav {
+  inset-inline: 0;
+  bottom: var(--b2me-dock-bottom);
+  width: min(calc(100% - 44px), 480px);
+  height: 58px;
+  margin-inline: auto;
+  padding: 4px 5px;
+  gap: 2px;
+  border: 1px solid #ffffff80;
+  border-radius: 999px;
+  background: #efeff1d9;
+  box-shadow: 0 8px 28px #17182426;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+.app .tabs.dockNav::before { content: none; }
+
+.dockNav .tab {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  padding: 3px 1px;
+  gap: 3px;
+  border-radius: 999px;
+  color: #161619;
+  font: 500 11px/1.15 system-ui, sans-serif;
+  text-shadow: none;
+}
+
+.dockNav .tab.active { color: #101012; background: #20202538; }
+.dockNav .tab .svgico { width: 24px; height: 24px; filter: none; }
+.dockNav .tab:focus-visible { outline-offset: -3px; }
+.app:has(.dockNav.show) .screen.active { padding-bottom: calc(var(--b2me-dock-bottom) + 76px); }
+
+@media (min-width: 760px) {
+  .app .tabs.dockNav { height: 64px; }
+  .dockNav .tab { font-size: 12px; }
+}
+
+.app .langControl {
+  align-items: center;
+  width: max-content;
+  gap: 5px;
+}
+
+.app .langControl select,
+.app .langControl .offerLocaleButton {
+  min-width: 0;
+  min-height: 32px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--b2me-control-bg);
+  color: #fff;
+  font: 650 12px/1.15 system-ui, sans-serif;
+}
+
+.app .langControl select { max-width: clamp(67px, 23vw, 140px); }
+.app .langControl .offerLocaleButton { flex-shrink: 0; white-space: nowrap; padding-inline: 11px; }
+.app .langControl .offerLocaleButton:hover { box-shadow: inset 0 0 0 1px #ffffff72; }
+.app .langControl .offerLocaleButton:focus-visible { outline: 2px solid #e38af2; outline-offset: 1px; }
+
+@media (max-width: 360px) {
+  .app .langControl { gap: 3px; }
+  .app .langControl select,
+  .app .langControl .offerLocaleButton { font-size: 11px; padding-inline: 6px; }
+}
+
+.app .brandLockup > span,
+.app .b2me-hub-lockup > .b2me-hub-pink-tag,
+#web-intro .brandLockup > span {
+  right: 7%;
+  bottom: 0;
+  transform: translateY(36%);
+  padding: 0;
+  color: #ff79d4;
+  font: italic 700 29px/1 var(--b2me-script);
+  letter-spacing: -.06em;
+  text-shadow: 0 1px 2px #4a1559, 0 0 7px #130d30;
+}
+
+.app .tinyBrand .brandLockup > span,
+.app .tinyBrand .b2me-hub-lockup > .b2me-hub-pink-tag {
+  font-size: clamp(15px, 1.8vw, 21px);
+}
+
+#home .tinyBrand {
+  min-width: 0;
+  align-items: flex-end;
+  gap: clamp(7px, 1.5vw, 16px);
+}
+
+#home .tinyBrand .countryBadge {
+  min-width: 0;
+  padding-bottom: .09em;
+  color: #fff;
+  font: italic 700 clamp(20px, 3.5vw, 35px)/1.15 var(--b2me-script);
+  transform: rotate(-4deg);
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 0 #c8c0da, 1px 2px 0 #9a90b5, 2px 3px 0 #675b88, 3px 5px 7px #0b0a20;
+}
