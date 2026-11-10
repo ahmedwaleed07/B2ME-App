@@ -21,14 +21,25 @@ The browser screens have their original approved identity and embedded brand ima
 ## Product decisions
 - **Iraq only at first**, extensible to other countries.
 - Email-based sign-up/login with a Remember Me option. Browsing may be done as a guest; sending inquiries and saving favorites require a real authenticated account.
-- The approved original B2ME logo is never regenerated, redrawn or recolored.
-- Slogan only on first screen: **كل عوامل نجاح مشروعك بمكان واحد**.
+- The original B2ME logo stays intact; the lowercase pink **hub** detail is overlaid near the bottom stroke of E. Display the product name as **B2ME hub** everywhere.
+- Approved slogan: **Everything your business needs in one place.** / **كل عوامل نجاح مشروعك بمكان واحد**. Never include “to succeed”.
 - First-screen footer: **Powered by** the approved ASAS 360° logo.
 - Providers edit services, business profiles and offers in the **separate provider dashboard**, not the consumer app.
 - Provider registration is an initial request only. It is stored in `public.provider_applications`; after B2ME admin review, a protected Edge Function sends an Auth invitation and creates a pending provider workspace.
 - Approval workflow: company profiles, listings and promotional offers must be approved by B2ME admin.
 - Contact requests are currently saved privately inside B2ME. Sending provider emails will require a protected delivery backend.
 - No payment collection has been activated.
+
+## UI revisions — November 10, 2026
+- Welcome/choice screen presents only the two core actions (Explore Service Providers and Want to Offer Your Services) plus approved branding; no signed-in email, My inquiries, Provider Dashboard or Sign Out links.
+- Bottom **Account** tab opens **My Account**, showing first/last name from Auth metadata (or an honest missing-name fallback), email, My inquiries, Provider Dashboard, and Sign Out last.
+- Provider Dashboard routes authorized providers to the workspace; others are directed to onboarding. Server-side permissions and admin approval remain authoritative.
+- A prominent **Offer Your Services** action is available at the top of internal browsing screens without requiring navigation back to the welcome screen.
+- Sign-up collects first name, last name, date of birth, email and password. Profile names are stored in Auth user metadata.
+- Provider dashboard registration link says **أنشئ حساب B2ME hub**, without **بالتطبيق**.
+- Visible logo treatment adds the pink lowercase **hub** near the lower stroke of the original letter E, without altering the original embedded brand asset.
+- HTML and embedded JavaScript syntax were checked after edits; **production deployment and real-device visual/end-to-end testing are not yet verified**.
+- The domain `b2me-hub.app` currently has DNS/origin configuration that is **not connected to a B2ME Cloudflare Pages project visible in the connected account**. GitHub edits alone must not be assumed live on the domain.
 
 ## Operational setup
 - Backend project: https://supabase.com/dashboard/project/wlamwvhrcezhpbudfzhp
