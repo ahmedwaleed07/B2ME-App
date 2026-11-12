@@ -61,7 +61,7 @@ async function invitation(db,env,id,actor){
   const title=(item.company_name||"").trim();
   stmts.push(db.prepare("INSERT INTO companies(id,owner_id,provider_type,slug,name_ar,contact_name,job_title,public_phone,public_email,website,social_links,activity_ids,logo_url,cover_url,description_ar,description_en,service_coverage) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(item.id,uid,item.provider_type||(title?"company":"freelancer"),"b2me-"+item.id,title||item.full_name,item.full_name,item.job_title,item.phone,item.email,item.website,item.social_links,item.activity_ids||"[]",item.logo_url||null,item.cover_url||null,item.bio||"",item.bio||"",item.service_coverage||null));
   stmts.push(db.prepare("UPDATE provider_applications SET status='approved',reviewed_at=?,reviewed_by=? WHERE id=? AND status='pending'").bind(now,actor,item.id));
-  stmts.push(db.prepare("INSERT INTO moderation_log(actor_id,entity_type,entity_id,old_status,new_status) VALUES(?, 'provider_applications', ?, 'pending', 'approved')").bind(actor,item.id));
+
  }
  await db.batch(stmts);
  if(!existing){
@@ -72,11 +72,12 @@ async function invitation(db,env,id,actor){
    await env.EMAIL.send({from:{email:"accounts@b2me-hub.app",name:"B2ME hub"},to:email,subject:"Your B2ME hub provider invitation",text:"Your B2ME hub provider invitation\n\nhttps://b2me-hub.app/forgot-password.html#type=invite&b2me_code="+raw+"\n\nThis link expires in one hour."});
   }catch(e){
    const back=[];
-   for(const item of pending){back.push(db.prepare("UPDATE provider_applications SET status='pending',reviewed_at=NULL,reviewed_by=NULL WHERE id=?").bind(item.id),db.prepare("DELETE FROM companies WHERE id=?").bind(item.id),db.prepare("DELETE FROM moderation_log WHERE entity_type='provider_applications' AND entity_id=? AND new_status='approved'").bind(item.id));}
+   for(const item of pending){back.push(db.prepare("UPDATE provider_applications SET status='pending',reviewed_at=NULL,reviewed_by=NULL WHERE id=?").bind(item.id),db.prepare("DELETE FROM companies WHERE id=?").bind(item.id));}
    back.push(db.prepare("DELETE FROM accounts WHERE id=?").bind(uid));
    await db.batch(back);fail("Invitation mail could not be sent; application has not been approved.",503);
   }
  }
+ await db.batch(pending.map(item=>db.prepare("INSERT INTO moderation_log(actor_id,entity_type,entity_id,old_status,new_status) VALUES(?, 'provider_applications', ?, 'pending', 'approved')").bind(actor,item.id)));
  return {ok:true,invited:!existing,companyStatus:"pending",count:pending.length};
 }
 async function moderate(db,env,body){
@@ -118,7 +119,15 @@ async function moderate(db,env,body){
  }
  if(!updates[entity]?.includes(status))fail("Unsupported action");
  const row=await one(db,"SELECT status FROM "+entity+" WHERE id=?",[id]);if(!row)fail("Record not found",404);if(row.status===status)fail("Already in this status",409);
- const out=await audit(db,actor,entity,id,row.status,status,db.prepare("UPDATE "+entity+" SET status=? WHERE id=?").bind(status,id));
+ if(entity==="verification_requests"&&status==="approved"){
+  const vr=await one(db,"SELECT company_id FROM verification_requests WHERE id=?",[id]);
+  const company=await one(db,"SELECT status FROM companies WHERE id=?",[vr.company_id]);
+  if(!company||company.status!=="approved")fail("Approve the provider before verifying documents",409);
+ }
+ const stmt=entity==="verification_requests"
+  ?db.prepare("UPDATE verification_requests SET status=?,reviewed_at=? WHERE id=?").bind(status,new Date().toISOString(),id)
+  :db.prepare("UPDATE "+entity+" SET status=? WHERE id=?").bind(status,id);
+ const out=await audit(db,actor,entity,id,row.status,status,stmt);
  if(entity==="verification_requests"&&status==="approved"){
   const req=await one(db,"SELECT company_id FROM verification_requests WHERE id=?",[id]);
   const co=await one(db,"SELECT verified,status FROM companies WHERE id=?",[req.company_id]);
