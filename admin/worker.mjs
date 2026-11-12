@@ -54,7 +54,7 @@ async function invitation(db,env,id,actor){
  const email=String(primary.email||"").trim().toLowerCase();
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))fail("Invalid applicant email");
  const existing=await one(db,"SELECT id,confirmed FROM accounts WHERE email=?",[email]);
- if(existing&&(!existing.confirmed||existing.id!==primary.applicant_account_id))fail("Provider email must match a verified applicant account first",409);
+ if(existing&&(!existing.confirmed||(primary.applicant_account_id&&existing.id!==primary.applicant_account_id)))fail("Provider email must match a verified applicant account first",409);
  const uid=existing?.id||crypto.randomUUID(),now=new Date().toISOString();
  const stmts=[existing?db.prepare("UPDATE accounts SET is_provider=1 WHERE id=?").bind(uid):db.prepare("INSERT INTO accounts(id,email,is_provider) VALUES(?,?,1)").bind(uid,email)];
  for(const item of pending){
